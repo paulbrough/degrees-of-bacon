@@ -192,7 +192,10 @@ export function EpisodeList({
                   return (
                     <div key={ep.id} className="flex gap-4 py-3">
                       {/* Still image */}
-                      <div className="relative aspect-video w-[120px] shrink-0 overflow-hidden rounded bg-surface sm:w-[160px]">
+                      <Link
+                        href={`/tv/${showId}/season/${season.season_number}/episode/${ep.episode_number}`}
+                        className="relative aspect-video w-[120px] shrink-0 overflow-hidden rounded bg-surface sm:w-[160px]"
+                      >
                         {stillUrl ? (
                           <Image
                             src={stillUrl}
@@ -206,14 +209,17 @@ export function EpisodeList({
                             No image
                           </div>
                         )}
-                      </div>
+                      </Link>
 
                       {/* Episode info */}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-medium">
+                          <Link
+                            href={`/tv/${showId}/season/${season.season_number}/episode/${ep.episode_number}`}
+                            className="text-sm font-medium hover:text-accent-hover"
+                          >
                             {ep.episode_number}. {ep.name}
-                          </span>
+                          </Link>
                           {ep.vote_average > 0 && (
                             <RatingBadge rating={ep.vote_average} />
                           )}

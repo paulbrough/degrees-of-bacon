@@ -1,6 +1,6 @@
-import { getMovie, getTv, getPerson, getTvSeason } from "@/lib/tmdb";
-import { getCachedProduction, cacheProduction, getCachedPerson, cachePerson, getCachedSeasons, cacheSeasons } from "@/lib/cache";
-import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail, TMDBSeasonDetail } from "@/lib/types/tmdb";
+import { getMovie, getTv, getPerson, getTvSeason, getTvEpisode } from "@/lib/tmdb";
+import { getCachedProduction, cacheProduction, getCachedPerson, cachePerson, getCachedSeasons, cacheSeasons, getCachedEpisode, cacheEpisode } from "@/lib/cache";
+import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail, TMDBSeasonDetail, TMDBEpisodeDetail } from "@/lib/types/tmdb";
 
 export async function fetchMovie(tmdbId: number): Promise<TMDBMovieDetail> {
   const cached = await getCachedProduction(tmdbId, "movie");
@@ -70,6 +70,28 @@ export async function fetchTvSeasons(
 
   const data = await fetchSeasonsFromTmdb(tvId, seasonNumbers);
   await cacheSeasons(tvId, data);
+  return data;
+}
+
+export async function fetchTvEpisode(
+  tvId: number,
+  seasonNumber: number,
+  episodeNumber: number
+): Promise<TMDBEpisodeDetail> {
+  const cached = await getCachedEpisode(tvId, seasonNumber, episodeNumber);
+  if (cached && !cached.isStale) {
+    return cached.data;
+  }
+
+  if (cached?.isStale) {
+    getTvEpisode(tvId, seasonNumber, episodeNumber)
+      .then((fresh) => cacheEpisode(tvId, seasonNumber, episodeNumber, fresh))
+      .catch(() => {});
+    return cached.data;
+  }
+
+  const data = await getTvEpisode(tvId, seasonNumber, episodeNumber);
+  await cacheEpisode(tvId, seasonNumber, episodeNumber, data);
   return data;
 }
 

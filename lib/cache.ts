@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
-import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail, TMDBSeasonDetail } from "@/lib/types/tmdb";
+import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail, TMDBSeasonDetail, TMDBEpisodeDetail } from "@/lib/types/tmdb";
 
 const PRODUCTION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const PERSON_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -105,6 +105,45 @@ export async function cacheSeasons(
     create: {
       tmdbId: tvId,
       mediaType: "tv-seasons",
+      data: data as unknown as Prisma.InputJsonValue,
+      cachedAt: new Date(),
+    },
+  });
+}
+
+// --- Episode Cache ---
+
+export async function getCachedEpisode(
+  tvId: number,
+  seasonNumber: number,
+  episodeNumber: number
+): Promise<CacheResult<TMDBEpisodeDetail> | null> {
+  const mediaType = `tv-episode-S${seasonNumber}E${episodeNumber}`;
+  const cached = await prisma.cachedProduction.findUnique({
+    where: { tmdbId_mediaType: { tmdbId: tvId, mediaType } },
+  });
+
+  if (!cached) return null;
+
+  return {
+    data: cached.data as unknown as TMDBEpisodeDetail,
+    isStale: isStale(cached.cachedAt, PRODUCTION_TTL_MS),
+  };
+}
+
+export async function cacheEpisode(
+  tvId: number,
+  seasonNumber: number,
+  episodeNumber: number,
+  data: TMDBEpisodeDetail
+): Promise<void> {
+  const mediaType = `tv-episode-S${seasonNumber}E${episodeNumber}`;
+  await prisma.cachedProduction.upsert({
+    where: { tmdbId_mediaType: { tmdbId: tvId, mediaType } },
+    update: { data: data as unknown as Prisma.InputJsonValue, cachedAt: new Date() },
+    create: {
+      tmdbId: tvId,
+      mediaType,
       data: data as unknown as Prisma.InputJsonValue,
       cachedAt: new Date(),
     },

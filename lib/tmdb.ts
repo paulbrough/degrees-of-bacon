@@ -5,6 +5,7 @@ import type {
   TMDBPersonDetail,
   TMDBTrendingResponse,
   TMDBSeasonDetail,
+  TMDBEpisodeDetail,
 } from "@/lib/types/tmdb";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -72,6 +73,17 @@ export async function getPopular(
 
 export async function getTvSeason(tvId: number, seasonNumber: number): Promise<TMDBSeasonDetail> {
   return tmdbFetch<TMDBSeasonDetail>(`/tv/${tvId}/season/${seasonNumber}`);
+}
+
+export async function getTvEpisode(
+  tvId: number,
+  seasonNumber: number,
+  episodeNumber: number
+): Promise<TMDBEpisodeDetail> {
+  return tmdbFetch<TMDBEpisodeDetail>(
+    `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`,
+    { append_to_response: "credits,images" }
+  );
 }
 
 export async function getRecommendationsFor(

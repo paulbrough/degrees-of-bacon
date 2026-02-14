@@ -176,6 +176,22 @@ export interface TMDBEpisode {
   runtime: number | null;
 }
 
+export interface TMDBEpisodeDetail extends TMDBEpisode {
+  show_id: number;
+  production_code: string;
+  vote_count: number;
+  crew: TMDBCrewMember[];
+  guest_stars: TMDBCastMember[];
+  credits?: {
+    cast: TMDBCastMember[];
+    crew: TMDBCrewMember[];
+    guest_stars: TMDBCastMember[];
+  };
+  images?: {
+    stills: TMDBImage[];
+  };
+}
+
 export interface TMDBSeasonDetail {
   id: number;
   name: string;
