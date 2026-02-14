@@ -2,16 +2,43 @@ import Link from "next/link";
 import Image from "next/image";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import type { TMDBCastMember } from "@/lib/types/tmdb";
+import { CastAges } from "@/components/CastAges";
 
-export function CastSection({ cast }: { cast: TMDBCastMember[] }) {
+interface CastSectionProps {
+  cast: TMDBCastMember[];
+  mediaType: "movie" | "tv";
+  productionId: number;
+  episodeCounts?: Record<number, number>;
+  filmYear?: string | null;
+}
+
+export function CastSection({
+  cast,
+  mediaType,
+  productionId,
+  episodeCounts,
+  filmYear,
+}: CastSectionProps) {
   if (!cast || cast.length === 0) return null;
+
+  const top = cast.slice(0, 10);
+  const personIds = top.map((m) => m.id);
 
   return (
     <section>
-      <h2 className="mb-4 text-lg font-semibold">Cast</h2>
+      <Link
+        href={`/${mediaType}/${productionId}/cast`}
+        className="group mb-4 flex items-center gap-2 text-lg font-semibold hover:text-accent-hover"
+      >
+        Top Cast
+        <span className="text-muted transition-transform group-hover:translate-x-0.5">
+          &rarr;
+        </span>
+      </Link>
       <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-        {cast.slice(0, 20).map((member) => {
+        {top.map((member) => {
           const imgUrl = tmdbImageUrl(member.profile_path, "w185");
+          const epCount = episodeCounts?.[member.id];
           return (
             <Link
               key={`${member.id}-${member.character}`}
@@ -37,10 +64,14 @@ export function CastSection({ cast }: { cast: TMDBCastMember[] }) {
                 {member.name}
               </p>
               <p className="truncate text-xs text-muted">{member.character}</p>
+              {epCount != null && (
+                <p className="text-xs text-muted">{epCount} episode{epCount !== 1 ? "s" : ""}</p>
+              )}
             </Link>
           );
         })}
       </div>
+      <CastAges personIds={personIds} filmYear={filmYear ?? null} />
     </section>
   );
 }

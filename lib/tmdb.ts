@@ -47,7 +47,7 @@ export async function getMovie(id: number): Promise<TMDBMovieDetail> {
 
 export async function getTv(id: number): Promise<TMDBTvDetail> {
   return tmdbFetch<TMDBTvDetail>(`/tv/${id}`, {
-    append_to_response: "credits,images,recommendations,similar,external_ids",
+    append_to_response: "credits,aggregate_credits,images,recommendations,similar,external_ids",
   });
 }
 

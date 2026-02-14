@@ -56,6 +56,40 @@ export interface TMDBGenre {
   name: string;
 }
 
+// Aggregate Credits (TV — includes episode counts)
+export interface TMDBAggregateCastRole {
+  character: string;
+  episode_count: number;
+}
+
+export interface TMDBAggregateCastMember {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  roles: TMDBAggregateCastRole[];
+  total_episode_count: number;
+  order: number;
+}
+
+export interface TMDBAggregateCrewJob {
+  job: string;
+  episode_count: number;
+}
+
+export interface TMDBAggregateCrewMember {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  jobs: TMDBAggregateCrewJob[];
+  total_episode_count: number;
+  department: string;
+}
+
+export interface TMDBAggregateCredits {
+  cast: TMDBAggregateCastMember[];
+  crew: TMDBAggregateCrewMember[];
+}
+
 // Credits
 export interface TMDBCastMember {
   id: number;
@@ -156,6 +190,7 @@ export interface TMDBTvDetail {
   recommendations: { results: TMDBTvSearchResult[] };
   similar: { results: TMDBTvSearchResult[] };
   external_ids?: { imdb_id: string | null };
+  aggregate_credits?: TMDBAggregateCredits;
 }
 
 // Person Detail

@@ -171,7 +171,12 @@ export default async function MoviePage({
 
       {/* Cast */}
       <div className="mb-8">
-        <CastSection cast={movie.credits?.cast ?? []} />
+        <CastSection
+          cast={movie.credits?.cast ?? []}
+          mediaType="movie"
+          productionId={movie.id}
+          filmYear={year}
+        />
       </div>
 
       {/* Recommendations */}

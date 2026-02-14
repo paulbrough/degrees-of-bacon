@@ -8,6 +8,7 @@ import { IMDbRating } from "@/components/IMDbRating";
 import { CastSection } from "@/components/CastSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { WatchListButton } from "@/components/WatchListButton";
+import type { TMDBCastMember } from "@/lib/types/tmdb";
 
 export default async function TvPage({
   params,
@@ -39,6 +40,30 @@ export default async function TvPage({
   const producers = show.credits?.crew?.filter(
     (c) => c.job === "Executive Producer"
   )?.slice(0, 5) ?? [];
+
+  // Build top cast from aggregate_credits (sorted by episode count) or fall back to regular credits
+  let tvTopCast: TMDBCastMember[];
+  let tvEpisodeCounts: Record<number, number> | undefined;
+
+  const aggCast = show.aggregate_credits?.cast;
+  if (aggCast && aggCast.length > 0) {
+    const sorted = [...aggCast].sort(
+      (a, b) => b.total_episode_count - a.total_episode_count || a.order - b.order
+    );
+    tvTopCast = sorted.map((m) => ({
+      id: m.id,
+      name: m.name,
+      profile_path: m.profile_path,
+      character: m.roles[0]?.character ?? "",
+      order: m.order,
+      known_for_department: "Acting",
+    }));
+    tvEpisodeCounts = Object.fromEntries(
+      sorted.map((m) => [m.id, m.total_episode_count])
+    );
+  } else {
+    tvTopCast = show.credits?.cast ?? [];
+  }
 
   const seasonEpStr = [
     show.number_of_seasons ? `${show.number_of_seasons} season${show.number_of_seasons > 1 ? "s" : ""}` : null,
@@ -184,7 +209,13 @@ export default async function TvPage({
 
       {/* Cast */}
       <div className="mb-8">
-        <CastSection cast={show.credits?.cast ?? []} />
+        <CastSection
+          cast={tvTopCast}
+          mediaType="tv"
+          productionId={show.id}
+          episodeCounts={tvEpisodeCounts}
+          filmYear={year}
+        />
       </div>
 
       {/* Recommendations */}
