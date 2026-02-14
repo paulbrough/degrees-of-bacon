@@ -4,6 +4,7 @@ import type {
   TMDBTvDetail,
   TMDBPersonDetail,
   TMDBTrendingResponse,
+  TMDBSeasonDetail,
 } from "@/lib/types/tmdb";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
@@ -67,6 +68,10 @@ export async function getPopular(
   mediaType: "movie" | "tv"
 ): Promise<TMDBTrendingResponse> {
   return tmdbFetch<TMDBTrendingResponse>(`/${mediaType}/popular`);
+}
+
+export async function getTvSeason(tvId: number, seasonNumber: number): Promise<TMDBSeasonDetail> {
+  return tmdbFetch<TMDBSeasonDetail>(`/tv/${tvId}/season/${seasonNumber}`);
 }
 
 export async function getRecommendationsFor(

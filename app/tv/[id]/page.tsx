@@ -6,6 +6,7 @@ import { fetchTv } from "@/lib/fetch-production";
 import { RatingBadge } from "@/components/RatingBadge";
 import { IMDbRating } from "@/components/IMDbRating";
 import { CastSection } from "@/components/CastSection";
+import { EpisodeListSection } from "@/components/EpisodeListSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { WatchListButton } from "@/components/WatchListButton";
 import type { TMDBCastMember } from "@/lib/types/tmdb";
@@ -217,6 +218,13 @@ export default async function TvPage({
           filmYear={year}
         />
       </div>
+
+      {/* Episodes */}
+      {show.seasons && show.seasons.length > 0 && (
+        <div className="mb-8">
+          <EpisodeListSection showId={show.id} seasons={show.seasons} />
+        </div>
+      )}
 
       {/* Recommendations */}
       <RecommendationsSection

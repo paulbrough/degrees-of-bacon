@@ -153,6 +153,39 @@ export interface TMDBMovieDetail {
   similar: { results: TMDBMovieSearchResult[] };
 }
 
+// Seasons & Episodes
+export interface TMDBSeasonSummary {
+  id: number;
+  name: string;
+  overview: string;
+  season_number: number;
+  episode_count: number;
+  air_date: string | null;
+  poster_path: string | null;
+}
+
+export interface TMDBEpisode {
+  id: number;
+  name: string;
+  overview: string;
+  episode_number: number;
+  season_number: number;
+  air_date: string | null;
+  still_path: string | null;
+  vote_average: number;
+  runtime: number | null;
+}
+
+export interface TMDBSeasonDetail {
+  id: number;
+  name: string;
+  overview: string;
+  season_number: number;
+  air_date: string | null;
+  poster_path: string | null;
+  episodes: TMDBEpisode[];
+}
+
 // TV Detail
 export interface TMDBNetwork {
   id: number;
@@ -189,6 +222,7 @@ export interface TMDBTvDetail {
   images: TMDBImages;
   recommendations: { results: TMDBTvSearchResult[] };
   similar: { results: TMDBTvSearchResult[] };
+  seasons?: TMDBSeasonSummary[];
   external_ids?: { imdb_id: string | null };
   aggregate_credits?: TMDBAggregateCredits;
 }
