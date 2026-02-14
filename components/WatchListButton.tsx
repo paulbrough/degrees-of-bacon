@@ -34,7 +34,6 @@ export function WatchListButton({
 
   const toggle = async () => {
     const prev = onList;
-    setOnList(!prev); // Optimistic
 
     try {
       if (prev) {
@@ -45,6 +44,7 @@ export function WatchListButton({
         });
         if (res.status === 401) { router.push("/auth/signin"); return; }
         if (!res.ok) throw new Error();
+        setOnList(false);
       } else {
         const res = await fetch("/api/watchlist", {
           method: "POST",
@@ -52,8 +52,9 @@ export function WatchListButton({
           body: JSON.stringify({ tmdbId, mediaType, title, posterPath, year, rating }),
         });
         if (res.status === 401) { router.push("/auth/signin"); return; }
-        // 409 means already on list — treat as success
-        if (!res.ok && res.status !== 409) throw new Error();
+        if (res.status === 409) { setOnList(true); return; } // genuinely already exists
+        if (!res.ok) throw new Error();
+        setOnList(true);
       }
     } catch {
       setOnList(prev); // Revert on error

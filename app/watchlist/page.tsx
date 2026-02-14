@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
@@ -23,13 +24,16 @@ type FilterType = "all" | "movie" | "tv";
 export default function WatchListPage() {
   const [entries, setEntries] = useState<WatchListEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortField>("addedAt");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [filter, setFilter] = useState<FilterType>("all");
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const params = new URLSearchParams({
       sort,
       order,
@@ -38,14 +42,24 @@ export default function WatchListPage() {
     });
     try {
       const res = await fetch(`/api/watchlist?${params}`);
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
+      if (!res.ok) {
+        setError("Failed to load watch list. Please try again.");
+        setEntries([]);
+        return;
+      }
       const data = await res.json();
       setEntries(data.entries ?? []);
     } catch {
+      setError("Failed to load watch list. Please try again.");
       setEntries([]);
     } finally {
       setLoading(false);
     }
-  }, [sort, order, filter, search]);
+  }, [sort, order, filter, search, router]);
 
   useEffect(() => {
     fetchEntries();
@@ -137,6 +151,10 @@ export default function WatchListPage() {
       {/* Content */}
       {loading ? (
         <p className="text-sm text-muted">Loading...</p>
+      ) : error ? (
+        <div className="py-12 text-center">
+          <p className="text-red-400">{error}</p>
+        </div>
       ) : entries.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted">Your watch list is empty.</p>

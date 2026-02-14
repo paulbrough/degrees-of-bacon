@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUserId, ensurePrismaUser } from "@/lib/auth";
+import { getAuthUser, ensurePrismaUser } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
-  const userId = await getAuthUserId();
+  const user = await getAuthUser();
+  const userId = user?.id ?? null;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -37,22 +38,29 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const userId = await getAuthUserId();
+  const user = await getAuthUser();
+  const userId = user?.id ?? null;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const body = await request.json();
+  const { tmdbId, mediaType, title, posterPath, year, rating } = body;
+
+  if (!tmdbId || !mediaType || !title) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Ensure Prisma user exists — separate from entry creation so a user-table
+  // constraint error doesn't get misreported as "Already on watch list"
   try {
-    const body = await request.json();
-    const { tmdbId, mediaType, title, posterPath, year, rating } = body;
+    await ensurePrismaUser(userId, user!.email ?? "");
+  } catch (e: unknown) {
+    console.error("ensurePrismaUser error:", e);
+    return NextResponse.json({ error: "Failed to sync user" }, { status: 500 });
+  }
 
-    if (!tmdbId || !mediaType || !title) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    // Ensure Prisma user exists
-    await ensurePrismaUser(userId, "");
-
+  try {
     const entry = await prisma.watchListEntry.create({
       data: {
         userId,
@@ -67,7 +75,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(entry, { status: 201 });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes("unique") || msg.includes("Unique") || msg.includes("P2002")) {
+    if (msg.includes("P2002")) {
       return NextResponse.json({ error: "Already on watch list" }, { status: 409 });
     }
     console.error("Watchlist POST error:", e);
@@ -76,7 +84,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const userId = await getAuthUserId();
+  const user = await getAuthUser();
+  const userId = user?.id ?? null;
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
