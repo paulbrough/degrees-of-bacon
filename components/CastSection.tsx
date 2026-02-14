@@ -10,6 +10,7 @@ interface CastSectionProps {
   productionId: number;
   episodeCounts?: Record<number, number>;
   filmYear?: string | null;
+  castUrl?: string;
 }
 
 export function CastSection({
@@ -18,6 +19,7 @@ export function CastSection({
   productionId,
   episodeCounts,
   filmYear,
+  castUrl,
 }: CastSectionProps) {
   if (!cast || cast.length === 0) return null;
 
@@ -27,7 +29,7 @@ export function CastSection({
   return (
     <section>
       <Link
-        href={`/${mediaType}/${productionId}/cast`}
+        href={castUrl ?? `/${mediaType}/${productionId}/cast`}
         className="group mb-4 flex items-center gap-2 text-lg font-semibold hover:text-accent-hover"
       >
         Top Cast

@@ -31,7 +31,7 @@ interface CrewEntry {
   episodeCount?: number;
 }
 
-type Tab = "cast" | "crew";
+type Tab = "cast" | "guest_stars" | "crew";
 type CastSort = "billing" | "episodes" | "name";
 type CrewSort = "department" | "name";
 
@@ -47,6 +47,8 @@ interface FullCastListProps {
   aggregateCrew?: TMDBAggregateCrewMember[];
   filmYear: string | null;
   filmEndYear?: string | null;
+  backUrl?: string;
+  guestStars?: TMDBCastMember[];
 }
 
 function formatAge(
@@ -82,10 +84,12 @@ export function FullCastList({
   aggregateCrew,
   filmYear,
   filmEndYear,
+  backUrl,
+  guestStars,
 }: FullCastListProps) {
   const [tab, setTab] = useState<Tab>("cast");
   const [castSort, setCastSort] = useState<CastSort>(
-    mediaType === "tv" ? "episodes" : "billing"
+    guestStars ? "billing" : mediaType === "tv" ? "episodes" : "billing"
   );
   const [crewSort, setCrewSort] = useState<CrewSort>("department");
   const [birthdays, setBirthdays] = useState<Record<number, string | null>>({});
@@ -146,6 +150,33 @@ export function FullCastList({
     return Array.from(map.values());
   }, [mediaType, aggregateCrew, crew]);
 
+  // Build guest star entries
+  const guestStarEntries: CastEntry[] = useMemo(() => {
+    if (!guestStars) return [];
+    return guestStars.map((m) => ({
+      id: m.id,
+      name: m.name,
+      profilePath: m.profile_path,
+      character: m.character,
+      order: m.order,
+    }));
+  }, [guestStars]);
+
+  // Sorted guest stars
+  const [guestSort, setGuestSort] = useState<CastSort>("billing");
+  const sortedGuestStars = useMemo(() => {
+    const items = [...guestStarEntries];
+    switch (guestSort) {
+      case "billing":
+        items.sort((a, b) => a.order - b.order);
+        break;
+      case "name":
+        items.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+    return items;
+  }, [guestStarEntries, guestSort]);
+
   // Sorted cast
   const sortedCast = useMemo(() => {
     const items = [...castEntries];
@@ -198,7 +229,12 @@ export function FullCastList({
   }, [sortedCrew, crewSort]);
 
   // Fetch birthdays for visible people
-  const visibleIds = tab === "cast" ? sortedCast.map((c) => c.id) : sortedCrew.map((c) => c.id);
+  const visibleIds =
+    tab === "cast"
+      ? sortedCast.map((c) => c.id)
+      : tab === "guest_stars"
+        ? sortedGuestStars.map((c) => c.id)
+        : sortedCrew.map((c) => c.id);
 
   useEffect(() => {
     if (!filmYear) return;
@@ -243,7 +279,7 @@ export function FullCastList({
   const posterUrl = tmdbImageUrl(posterPath, "w92");
 
   const castSortOptions: { label: string; value: CastSort }[] =
-    mediaType === "tv"
+    mediaType === "tv" && !guestStars
       ? [
           { label: "Episode Count", value: "episodes" },
           { label: "Billing Order", value: "billing" },
@@ -253,6 +289,11 @@ export function FullCastList({
           { label: "Billing Order", value: "billing" },
           { label: "Name A-Z", value: "name" },
         ];
+
+  const guestSortOptions: { label: string; value: CastSort }[] = [
+    { label: "Billing Order", value: "billing" },
+    { label: "Name A-Z", value: "name" },
+  ];
 
   const crewSortOptions: { label: string; value: CrewSort }[] = [
     { label: "Department", value: "department" },
@@ -264,7 +305,7 @@ export function FullCastList({
       {/* Mini header */}
       <div className="mb-6 flex items-center gap-4">
         <Link
-          href={`/${mediaType}/${productionId}`}
+          href={backUrl ?? `/${mediaType}/${productionId}`}
           className="group flex items-center gap-3 hover:text-accent-hover"
         >
           {posterUrl ? (
@@ -298,31 +339,55 @@ export function FullCastList({
       <div className="mb-4 flex flex-wrap items-center gap-3">
         {/* Tab pills */}
         <div className="flex gap-1">
-          {(["cast", "crew"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`rounded-full px-3 py-1 text-sm transition-colors ${
-                tab === t
-                  ? "bg-accent text-white"
-                  : "bg-surface text-muted hover:bg-surface-hover"
-              }`}
-            >
-              {t === "cast" ? `Cast (${castEntries.length})` : `Crew (${crewEntries.length})`}
-            </button>
-          ))}
+          {(
+            guestStarEntries.length > 0
+              ? (["cast", "guest_stars", "crew"] as Tab[])
+              : (["cast", "crew"] as Tab[])
+          ).map((t) => {
+            const label =
+              t === "cast"
+                ? `Cast (${castEntries.length})`
+                : t === "guest_stars"
+                  ? `Guest Stars (${guestStarEntries.length})`
+                  : `Crew (${crewEntries.length})`;
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-full px-3 py-1 text-sm transition-colors ${
+                  tab === t
+                    ? "bg-accent text-white"
+                    : "bg-surface text-muted hover:bg-surface-hover"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Sort */}
         <select
-          value={tab === "cast" ? castSort : crewSort}
+          value={
+            tab === "cast"
+              ? castSort
+              : tab === "guest_stars"
+                ? guestSort
+                : crewSort
+          }
           onChange={(e) => {
             if (tab === "cast") setCastSort(e.target.value as CastSort);
+            else if (tab === "guest_stars") setGuestSort(e.target.value as CastSort);
             else setCrewSort(e.target.value as CrewSort);
           }}
           className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-foreground outline-none"
         >
-          {(tab === "cast" ? castSortOptions : crewSortOptions).map((opt) => (
+          {(tab === "cast"
+            ? castSortOptions
+            : tab === "guest_stars"
+              ? guestSortOptions
+              : crewSortOptions
+          ).map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -386,6 +451,63 @@ export function FullCastList({
                       {entry.episodeCount !== 1 ? "s" : ""}
                     </p>
                   )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Guest stars list */}
+      {tab === "guest_stars" && (
+        <div className="divide-y divide-border">
+          {sortedGuestStars.map((entry) => {
+            const imgUrl = tmdbImageUrl(entry.profilePath, "w185");
+            const ageDisplay =
+              filmYear && birthdays[entry.id]
+                ? formatAge(birthdays[entry.id]!, filmYear, filmEndYear)
+                : null;
+            return (
+              <div
+                key={`${entry.id}-${entry.character}`}
+                className="flex items-center gap-4 py-3"
+              >
+                <Link
+                  href={`/person/${entry.id}`}
+                  className="shrink-0"
+                >
+                  {imgUrl ? (
+                    <Image
+                      src={imgUrl}
+                      alt={entry.name}
+                      width={50}
+                      height={75}
+                      className="rounded object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-[75px] w-[50px] items-center justify-center rounded bg-surface text-xs text-muted">
+                      ?
+                    </div>
+                  )}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/person/${entry.id}`}
+                    className="font-medium hover:text-accent-hover"
+                  >
+                    {entry.name}
+                  </Link>
+                  <p className="truncate text-sm text-muted">
+                    {entry.character}
+                    {ageDisplay != null && (
+                      <span className="ml-2 text-xs">
+                        ({ageDisplay})
+                      </span>
+                    )}
+                    {ageDisplay == null && loadingAges && filmYear && (
+                      <span className="ml-2 inline-block h-3 w-12 animate-pulse rounded bg-surface align-middle" />
+                    )}
+                  </p>
                 </div>
               </div>
             );

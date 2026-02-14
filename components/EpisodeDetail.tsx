@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { RatingBadge } from "@/components/RatingBadge";
+import { CastSection } from "@/components/CastSection";
 import type { TMDBEpisodeDetail, TMDBTvDetail } from "@/lib/types/tmdb";
 
 interface EpisodeNav {
@@ -152,6 +153,19 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
         )}
       </div>
 
+      {/* Top Cast (series regulars) */}
+      {(episode.credits?.cast ?? []).length > 0 && (
+        <section className="mb-8">
+          <CastSection
+            cast={episode.credits?.cast ?? []}
+            mediaType="tv"
+            productionId={show.id}
+            castUrl={`/tv/${show.id}/season/${episode.season_number}/episode/${episode.episode_number}/cast`}
+            filmYear={episode.air_date?.slice(0, 4)}
+          />
+        </section>
+      )}
+
       {/* Key Crew */}
       {(directors.length > 0 || writers.length > 0) && (
         <section className="mb-8">
@@ -200,7 +214,15 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
       {/* Guest Stars */}
       {guestStars.length > 0 && (
         <section className="mb-8">
-          <h3 className="mb-4 text-lg font-semibold">Guest Stars</h3>
+          <Link
+            href={`/tv/${show.id}/season/${episode.season_number}/episode/${episode.episode_number}/cast`}
+            className="group mb-4 flex items-center gap-2 text-lg font-semibold hover:text-accent-hover"
+          >
+            Guest Stars
+            <span className="text-muted transition-transform group-hover:translate-x-0.5">
+              &rarr;
+            </span>
+          </Link>
           <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
             {guestStars.map((member) => {
               const imgUrl = tmdbImageUrl(member.profile_path, "w185");
