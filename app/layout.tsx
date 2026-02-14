@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { SearchBar } from "@/components/SearchBar";
+import { AuthButton } from "@/components/AuthButton";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,6 +26,15 @@ export default function RootLayout({
               Degrees of Bacon
             </Link>
             <SearchBar />
+            <nav className="flex items-center gap-4 text-sm">
+              <Link href="/watchlist" className="hidden text-muted hover:text-foreground transition-colors sm:block">
+                Watch List
+              </Link>
+              <Link href="/compare" className="hidden text-muted hover:text-foreground transition-colors sm:block">
+                Compare
+              </Link>
+              <AuthButton />
+            </nav>
           </div>
         </header>
 

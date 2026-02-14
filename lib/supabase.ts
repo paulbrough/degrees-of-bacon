@@ -1,15 +1,26 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient as createServerClientSSR } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export function createBrowserClient() {
-  return createClient(
+export async function createServerClient() {
+  const cookieStore = await cookies();
+  return createServerClientSSR(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-export function createServerClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Called from a Server Component — ignore
+          }
+        },
+      },
+    }
   );
 }

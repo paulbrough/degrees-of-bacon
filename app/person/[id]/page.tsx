@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { fetchPerson } from "@/lib/fetch-production";
 import { Filmography } from "@/components/Filmography";
+import { PredictionResults } from "@/components/PredictionResults";
 
 function calculateAge(birthday: string, deathday: string | null): number {
   const birth = new Date(birthday);
@@ -95,6 +96,9 @@ export default async function PersonPage({
           )}
         </div>
       </div>
+
+      {/* Where Do I Know Them From? */}
+      <PredictionResults personId={tmdbId} />
 
       {/* Filmography */}
       <div className="mb-8">

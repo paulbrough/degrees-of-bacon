@@ -62,3 +62,16 @@ export async function getTrending(
 ): Promise<TMDBTrendingResponse> {
   return tmdbFetch<TMDBTrendingResponse>(`/trending/all/${timeWindow}`);
 }
+
+export async function getPopular(
+  mediaType: "movie" | "tv"
+): Promise<TMDBTrendingResponse> {
+  return tmdbFetch<TMDBTrendingResponse>(`/${mediaType}/popular`);
+}
+
+export async function getRecommendationsFor(
+  tmdbId: number,
+  mediaType: "movie" | "tv"
+): Promise<TMDBTrendingResponse> {
+  return tmdbFetch<TMDBTrendingResponse>(`/${mediaType}/${tmdbId}/recommendations`);
+}

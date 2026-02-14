@@ -7,6 +7,7 @@ import { RatingBadge } from "@/components/RatingBadge";
 import { IMDbRating } from "@/components/IMDbRating";
 import { CastSection } from "@/components/CastSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
+import { WatchListButton } from "@/components/WatchListButton";
 
 export default async function TvPage({
   params,
@@ -116,12 +117,22 @@ export default async function TvPage({
               </p>
             )}
 
-            <Link
-              href={`/compare?a=${show.id}&aType=tv`}
-              className="mt-2 w-fit rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-            >
-              Compare with...
-            </Link>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <WatchListButton
+                tmdbId={show.id}
+                mediaType="tv"
+                title={show.name}
+                posterPath={show.poster_path}
+                year={year ?? null}
+                rating={show.vote_average}
+              />
+              <Link
+                href={`/compare?a=${show.id}&aType=tv`}
+                className="mt-2 w-fit rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              >
+                Compare with...
+              </Link>
+            </div>
           </div>
         </div>
       </div>

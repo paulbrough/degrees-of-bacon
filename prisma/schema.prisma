@@ -25,6 +25,8 @@ model WatchListEntry {
   mediaType String   @map("media_type")
   title     String
   posterPath String? @map("poster_path")
+  year      String?  @map("year")
+  rating    Float?   @map("rating")
   addedAt   DateTime @default(now()) @map("added_at")
 
   @@unique([userId, tmdbId, mediaType])
