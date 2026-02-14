@@ -41,60 +41,55 @@ export async function GET(request: NextRequest) {
 
     // Build maps of person → roles for both productions
     type RoleInfo = { name: string; profilePath: string | null; roles: Map<string, string> };
-    const mapA = new Map<number, RoleInfo>();
-    const mapB = new Map<number, RoleInfo>();
 
-    // Process credits for production A
-    for (const cast of prodA.credits?.cast ?? []) {
-      const existing = mapA.get(cast.id);
-      if (existing) {
-        existing.roles.set("Acting", cast.character || "Actor");
-      } else {
-        mapA.set(cast.id, {
-          name: cast.name,
-          profilePath: cast.profile_path,
-          roles: new Map([["Acting", cast.character || "Actor"]]),
-        });
+    function buildPersonMap(prod: Record<string, unknown>): Map<number, RoleInfo> {
+      const map = new Map<number, RoleInfo>();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p = prod as any;
+
+      // Use aggregate_credits for TV shows (more complete cast), fall back to regular credits
+      const useAggregate = !!p.aggregate_credits;
+      const castList = useAggregate ? (p.aggregate_credits?.cast ?? []) : (p.credits?.cast ?? []);
+      const crewList = useAggregate ? (p.aggregate_credits?.crew ?? []) : (p.credits?.crew ?? []);
+
+      for (const cast of castList) {
+        const character = useAggregate
+          ? (cast.roles?.map((r: { character: string }) => r.character).filter(Boolean).join(" / ") || "Actor")
+          : (cast.character || "Actor");
+        const existing = map.get(cast.id);
+        if (existing) {
+          existing.roles.set("Acting", character);
+        } else {
+          map.set(cast.id, {
+            name: cast.name,
+            profilePath: cast.profile_path,
+            roles: new Map([["Acting", character]]),
+          });
+        }
       }
-    }
-    for (const crew of prodA.credits?.crew ?? []) {
-      const existing = mapA.get(crew.id);
-      if (existing) {
-        existing.roles.set(crew.department, crew.job);
-      } else {
-        mapA.set(crew.id, {
-          name: crew.name,
-          profilePath: crew.profile_path,
-          roles: new Map([[crew.department, crew.job]]),
-        });
+
+      for (const crew of crewList) {
+        const department = useAggregate ? (crew.department || "Other") : crew.department;
+        const job = useAggregate
+          ? (crew.jobs?.map((j: { job: string }) => j.job).filter(Boolean).join(" / ") || department)
+          : crew.job;
+        const existing = map.get(crew.id);
+        if (existing) {
+          existing.roles.set(department, job);
+        } else {
+          map.set(crew.id, {
+            name: crew.name,
+            profilePath: crew.profile_path,
+            roles: new Map([[department, job]]),
+          });
+        }
       }
+
+      return map;
     }
 
-    // Process credits for production B
-    for (const cast of prodB.credits?.cast ?? []) {
-      const existing = mapB.get(cast.id);
-      if (existing) {
-        existing.roles.set("Acting", cast.character || "Actor");
-      } else {
-        mapB.set(cast.id, {
-          name: cast.name,
-          profilePath: cast.profile_path,
-          roles: new Map([["Acting", cast.character || "Actor"]]),
-        });
-      }
-    }
-    for (const crew of prodB.credits?.crew ?? []) {
-      const existing = mapB.get(crew.id);
-      if (existing) {
-        existing.roles.set(crew.department, crew.job);
-      } else {
-        mapB.set(crew.id, {
-          name: crew.name,
-          profilePath: crew.profile_path,
-          roles: new Map([[crew.department, crew.job]]),
-        });
-      }
-    }
+    const mapA = buildPersonMap(prodA as unknown as Record<string, unknown>);
+    const mapB = buildPersonMap(prodB as unknown as Record<string, unknown>);
 
     // Find shared people
     const shared: GroupedShared = { acting: [], directing: [], writing: [], production: [], other: [] };
