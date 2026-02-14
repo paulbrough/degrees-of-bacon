@@ -1,11 +1,163 @@
+import Link from "next/link";
+import Image from "next/image";
 import { searchMulti } from "@/lib/tmdb";
-import { ProductionCard } from "@/components/ProductionCard";
-import { PersonCard } from "@/components/PersonCard";
+import { tmdbImageUrl } from "@/lib/tmdb-image";
+import { RatingBadge } from "@/components/RatingBadge";
+import { SearchResults } from "@/components/SearchResults";
 import type {
+  TMDBMultiSearchResult,
   TMDBMovieSearchResult,
   TMDBTvSearchResult,
   TMDBPersonSearchResult,
 } from "@/lib/types/tmdb";
+
+const GENRE_MAP: Record<number, string> = {
+  28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+  99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+  27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance",
+  878: "Science Fiction", 10770: "TV Movie", 53: "Thriller", 10752: "War",
+  37: "Western", 10759: "Action & Adventure", 10762: "Kids", 10763: "News",
+  10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk",
+  10768: "War & Politics",
+};
+
+function TopResultMovie({ result }: { result: TMDBMovieSearchResult }) {
+  const imgUrl = tmdbImageUrl(result.poster_path, "w342");
+  const year = result.release_date?.slice(0, 4);
+  const genres = result.genre_ids
+    ?.map((id) => GENRE_MAP[id])
+    .filter(Boolean)
+    .slice(0, 3);
+  const overview =
+    result.overview && result.overview.length > 200
+      ? result.overview.slice(0, 200).trimEnd() + "..."
+      : result.overview;
+
+  return (
+    <Link
+      href={`/movie/${result.id}`}
+      className="group flex gap-6 rounded-xl bg-surface p-5 transition-colors hover:bg-surface-hover"
+    >
+      <div className="relative hidden aspect-[2/3] w-[140px] shrink-0 overflow-hidden rounded-lg sm:block">
+        {imgUrl ? (
+          <Image src={imgUrl} alt={result.title} fill sizes="140px" className="object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-border text-muted text-sm">No Image</div>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-col justify-center">
+        <span className="mb-1 w-fit rounded bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent">
+          Movie
+        </span>
+        <h2 className="text-xl font-bold group-hover:text-accent-hover">
+          {result.title}
+          {year && <span className="ml-2 text-base font-normal text-muted">({year})</span>}
+        </h2>
+        {genres && genres.length > 0 && (
+          <p className="mt-1 text-sm text-muted">{genres.join(", ")}</p>
+        )}
+        <div className="mt-2 flex items-center gap-3">
+          {result.vote_average > 0 && <RatingBadge rating={result.vote_average} />}
+        </div>
+        {overview && (
+          <p className="mt-3 text-sm leading-relaxed text-muted">{overview}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function TopResultTv({ result }: { result: TMDBTvSearchResult }) {
+  const imgUrl = tmdbImageUrl(result.poster_path, "w342");
+  const year = result.first_air_date?.slice(0, 4);
+  const genres = result.genre_ids
+    ?.map((id) => GENRE_MAP[id])
+    .filter(Boolean)
+    .slice(0, 3);
+  const overview =
+    result.overview && result.overview.length > 200
+      ? result.overview.slice(0, 200).trimEnd() + "..."
+      : result.overview;
+
+  return (
+    <Link
+      href={`/tv/${result.id}`}
+      className="group flex gap-6 rounded-xl bg-surface p-5 transition-colors hover:bg-surface-hover"
+    >
+      <div className="relative hidden aspect-[2/3] w-[140px] shrink-0 overflow-hidden rounded-lg sm:block">
+        {imgUrl ? (
+          <Image src={imgUrl} alt={result.name} fill sizes="140px" className="object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-border text-muted text-sm">No Image</div>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-col justify-center">
+        <span className="mb-1 w-fit rounded bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent">
+          TV Show
+        </span>
+        <h2 className="text-xl font-bold group-hover:text-accent-hover">
+          {result.name}
+          {year && <span className="ml-2 text-base font-normal text-muted">({year})</span>}
+        </h2>
+        {genres && genres.length > 0 && (
+          <p className="mt-1 text-sm text-muted">{genres.join(", ")}</p>
+        )}
+        <div className="mt-2 flex items-center gap-3">
+          {result.vote_average > 0 && <RatingBadge rating={result.vote_average} />}
+        </div>
+        {overview && (
+          <p className="mt-3 text-sm leading-relaxed text-muted">{overview}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function TopResultPerson({ result }: { result: TMDBPersonSearchResult }) {
+  const imgUrl = tmdbImageUrl(result.profile_path, "w342");
+  const knownFor = result.known_for
+    ?.map((k) => ("title" in k ? k.title : k.name) || "")
+    .filter(Boolean)
+    .slice(0, 4);
+
+  return (
+    <Link
+      href={`/person/${result.id}`}
+      className="group flex gap-6 rounded-xl bg-surface p-5 transition-colors hover:bg-surface-hover"
+    >
+      <div className="relative hidden aspect-[2/3] w-[140px] shrink-0 overflow-hidden rounded-lg sm:block">
+        {imgUrl ? (
+          <Image src={imgUrl} alt={result.name} fill sizes="140px" className="object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-border text-muted text-sm">?</div>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-col justify-center">
+        <span className="mb-1 w-fit rounded bg-accent/20 px-2 py-0.5 text-xs font-medium text-accent">
+          Person
+        </span>
+        <h2 className="text-xl font-bold group-hover:text-accent-hover">{result.name}</h2>
+        <p className="mt-1 text-sm text-muted">{result.known_for_department}</p>
+        {knownFor && knownFor.length > 0 && (
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Known for: {knownFor.join(", ")}
+          </p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function TopResult({ result }: { result: TMDBMultiSearchResult }) {
+  switch (result.media_type) {
+    case "movie":
+      return <TopResultMovie result={result} />;
+    case "tv":
+      return <TopResultTv result={result} />;
+    case "person":
+      return <TopResultPerson result={result} />;
+  }
+}
 
 export default async function SearchPage({
   searchParams,
@@ -23,15 +175,9 @@ export default async function SearchPage({
 
   const data = await searchMulti(q.trim());
 
-  const movies = data.results.filter(
-    (r): r is TMDBMovieSearchResult => r.media_type === "movie"
-  );
-  const tvShows = data.results.filter(
-    (r): r is TMDBTvSearchResult => r.media_type === "tv"
-  );
-  const people = data.results.filter(
-    (r): r is TMDBPersonSearchResult => r.media_type === "person"
-  );
+  const sorted = [...data.results].sort((a, b) => b.popularity - a.popularity);
+  const topResult = sorted[0] ?? null;
+  const rest = sorted.slice(1);
 
   return (
     <div>
@@ -39,65 +185,22 @@ export default async function SearchPage({
         Results for &ldquo;{q}&rdquo;
       </h1>
 
-      {movies.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-muted">Movies</h2>
-          <div className="flex flex-wrap gap-4">
-            {movies.map((m) => (
-              <ProductionCard
-                key={m.id}
-                id={m.id}
-                mediaType="movie"
-                title={m.title}
-                posterPath={m.poster_path}
-                year={m.release_date?.slice(0, 4) ?? null}
-                rating={m.vote_average}
-              />
-            ))}
-          </div>
+      {topResult && (
+        <section className="mt-6">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+            Top Result
+          </h2>
+          <TopResult result={topResult} />
         </section>
       )}
 
-      {tvShows.length > 0 && (
+      {rest.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-muted">TV Shows</h2>
-          <div className="flex flex-wrap gap-4">
-            {tvShows.map((t) => (
-              <ProductionCard
-                key={t.id}
-                id={t.id}
-                mediaType="tv"
-                title={t.name}
-                posterPath={t.poster_path}
-                year={t.first_air_date?.slice(0, 4) ?? null}
-                rating={t.vote_average}
-              />
-            ))}
-          </div>
+          <SearchResults results={rest} />
         </section>
       )}
 
-      {people.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-muted">People</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {people.map((p) => (
-              <PersonCard
-                key={p.id}
-                id={p.id}
-                name={p.name}
-                profilePath={p.profile_path}
-                knownForDepartment={p.known_for_department}
-                knownFor={p.known_for?.map(
-                  (k) => ("title" in k ? k.title : k.name) || ""
-                )}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {movies.length === 0 && tvShows.length === 0 && people.length === 0 && (
+      {data.results.length === 0 && (
         <p className="mt-8 text-muted">No results found.</p>
       )}
     </div>

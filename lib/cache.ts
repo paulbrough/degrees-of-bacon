@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail } from "@/lib/types/tmdb";
 
 const PRODUCTION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -39,11 +40,11 @@ export async function cacheProduction(
 ): Promise<void> {
   await prisma.cachedProduction.upsert({
     where: { tmdbId_mediaType: { tmdbId, mediaType } },
-    update: { data: data as unknown as Record<string, unknown>, cachedAt: new Date() },
+    update: { data: data as unknown as Prisma.InputJsonValue, cachedAt: new Date() },
     create: {
       tmdbId,
       mediaType,
-      data: data as unknown as Record<string, unknown>,
+      data: data as unknown as Prisma.InputJsonValue,
       cachedAt: new Date(),
     },
   });
@@ -100,10 +101,10 @@ export async function cachePerson(
 ): Promise<void> {
   await prisma.cachedPerson.upsert({
     where: { tmdbId },
-    update: { data: data as unknown as Record<string, unknown>, cachedAt: new Date() },
+    update: { data: data as unknown as Prisma.InputJsonValue, cachedAt: new Date() },
     create: {
       tmdbId,
-      data: data as unknown as Record<string, unknown>,
+      data: data as unknown as Prisma.InputJsonValue,
       cachedAt: new Date(),
     },
   });
