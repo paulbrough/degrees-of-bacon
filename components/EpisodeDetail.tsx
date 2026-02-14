@@ -19,7 +19,7 @@ interface EpisodeDetailProps {
 }
 
 export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps) {
-  const posterUrl = tmdbImageUrl(show.poster_path, "w92");
+  const posterUrl = tmdbImageUrl(show.poster_path, "w500");
   const stillUrl = tmdbImageUrl(episode.still_path, "original");
   const year = show.first_air_date?.slice(0, 4);
 
@@ -39,85 +39,114 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
 
   return (
     <div>
-      {/* Mini header */}
-      <div className="mb-6 flex items-center gap-4">
-        <Link
-          href={`/tv/${show.id}`}
-          className="group flex items-center gap-3 hover:text-accent-hover"
-        >
-          {posterUrl ? (
-            <Image
-              src={posterUrl}
-              alt={show.name}
-              width={46}
-              height={69}
-              className="rounded"
-            />
-          ) : (
-            <div className="flex h-[69px] w-[46px] items-center justify-center rounded bg-surface text-xs text-muted">
-              ?
-            </div>
-          )}
-          <div>
-            <h1 className="text-lg font-semibold group-hover:text-accent-hover">
-              {show.name}
-              {year && (
-                <span className="ml-2 text-sm font-normal text-muted">
-                  ({year})
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-muted">&larr; Back to details</p>
-          </div>
-        </Link>
-      </div>
-
-      {/* Episode still */}
-      {stillUrl && (
-        <div className="relative mx-auto mb-6 aspect-video max-w-3xl overflow-hidden rounded-lg bg-surface">
+      {/* Hero */}
+      <div className="relative -mx-4 -mt-8 mb-8 overflow-hidden">
+        {stillUrl && (
           <Image
             src={stillUrl}
-            alt={episode.name}
+            alt=""
             fill
             priority
-            sizes="(max-width: 768px) 100vw, 768px"
-            className="object-cover"
+            className="object-cover opacity-30"
           />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+
+        <div className="relative flex gap-8 px-4 py-12 sm:px-8 sm:py-16">
+          {posterUrl && (
+            <Link
+              href={`/tv/${show.id}`}
+              className="relative hidden aspect-[2/3] w-[200px] shrink-0 overflow-hidden rounded-lg shadow-xl transition-opacity hover:opacity-80 sm:block"
+            >
+              <Image
+                src={posterUrl}
+                alt={show.name}
+                fill
+                priority
+                sizes="200px"
+                className="object-cover"
+              />
+            </Link>
+          )}
+
+          <div className="flex flex-col justify-end gap-3">
+            <Link
+              href={`/tv/${show.id}`}
+              className="w-fit text-sm text-muted transition-colors hover:text-accent-hover"
+            >
+              &larr; {show.name}{year ? ` (${year})` : ""}
+            </Link>
+
+            <h1 className="text-3xl font-bold sm:text-4xl">
+              <span className="text-muted">{epLabel}</span>
+              {" \u00b7 "}
+              {episode.name}
+            </h1>
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+              {episode.air_date && (
+                <span>
+                  {new Date(episode.air_date).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              )}
+              {episode.runtime != null && <span>{episode.runtime} min</span>}
+            </div>
+
+            {episode.vote_average > 0 && (
+              <div className="flex items-center gap-3">
+                <RatingBadge rating={episode.vote_average} label="TMDB" />
+              </div>
+            )}
+
+            {episode.overview && (
+              <p className="max-w-2xl text-sm leading-relaxed">
+                {episode.overview}
+              </p>
+            )}
+
+            {(directors.length > 0 || writers.length > 0) && (
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                {directors.length > 0 && (
+                  <span>
+                    <span className="text-muted">Directed by </span>
+                    {directors.map((d, i) => (
+                      <span key={d.id}>
+                        {i > 0 && ", "}
+                        <Link
+                          href={`/person/${d.id}`}
+                          className="hover:text-accent-hover"
+                        >
+                          {d.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </span>
+                )}
+                {writers.length > 0 && (
+                  <span>
+                    <span className="text-muted">Written by </span>
+                    {writers.map((w, i) => (
+                      <span key={`${w.id}-${w.job}`}>
+                        {i > 0 && ", "}
+                        <Link
+                          href={`/person/${w.id}`}
+                          className="hover:text-accent-hover"
+                        >
+                          {w.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Title + rating */}
-      <div className="mb-2 flex flex-wrap items-center gap-3">
-        <h2 className="text-2xl font-bold">
-          <span className="text-muted">{epLabel}</span>
-          {" · "}
-          {episode.name}
-        </h2>
-        {episode.vote_average > 0 && (
-          <RatingBadge rating={episode.vote_average} />
-        )}
       </div>
-
-      {/* Metadata */}
-      <div className="mb-4 flex flex-wrap gap-x-4 text-sm text-muted">
-        {episode.air_date && (
-          <span>
-            {new Date(episode.air_date).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
-        )}
-        {episode.runtime != null && <span>{episode.runtime} min</span>}
-      </div>
-
-      {/* Overview */}
-      {episode.overview && (
-        <p className="mb-8 max-w-2xl text-sm leading-relaxed">
-          {episode.overview}
-        </p>
-      )}
 
       {/* Prev/Next navigation */}
       <div className="mb-8 flex items-center justify-between gap-4">
@@ -163,51 +192,6 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
             castUrl={`/tv/${show.id}/season/${episode.season_number}/episode/${episode.episode_number}/cast`}
             filmYear={episode.air_date?.slice(0, 4)}
           />
-        </section>
-      )}
-
-      {/* Key Crew */}
-      {(directors.length > 0 || writers.length > 0) && (
-        <section className="mb-8">
-          <h3 className="mb-3 text-lg font-semibold">Key Crew</h3>
-          <div className="flex flex-wrap gap-6 text-sm">
-            {directors.length > 0 && (
-              <div>
-                <span className="text-muted">
-                  Director{directors.length > 1 ? "s" : ""}
-                </span>
-                <div className="mt-1 flex gap-2">
-                  {directors.map((d) => (
-                    <Link
-                      key={d.id}
-                      href={`/person/${d.id}`}
-                      className="hover:text-accent-hover"
-                    >
-                      {d.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-            {writers.length > 0 && (
-              <div>
-                <span className="text-muted">
-                  Writer{writers.length > 1 ? "s" : ""}
-                </span>
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {writers.map((w) => (
-                    <Link
-                      key={`${w.id}-${w.job}`}
-                      href={`/person/${w.id}`}
-                      className="hover:text-accent-hover"
-                    >
-                      {w.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </section>
       )}
 
