@@ -100,6 +100,7 @@ export function Filmography({ castCredits, crewCredits }: FilmographyProps) {
                 role={credit.character}
                 posterPath={credit.poster_path}
                 rating={credit.vote_average}
+                episodeCount={credit.episode_count}
               />
             ))}
           </div>
@@ -141,6 +142,7 @@ function CreditRow({
   role,
   posterPath,
   rating,
+  episodeCount,
 }: {
   id: number;
   mediaType: "movie" | "tv";
@@ -149,6 +151,7 @@ function CreditRow({
   role: string;
   posterPath: string | null;
   rating: number;
+  episodeCount?: number;
 }) {
   const href = `/${mediaType}/${id}`;
   const imgUrl = tmdbImageUrl(posterPath, "w92");
@@ -182,6 +185,12 @@ function CreditRow({
           {year && <span>{year}</span>}
           {year && role && <span>·</span>}
           {role && <span className="truncate">{role}</span>}
+          {episodeCount != null && episodeCount > 0 && (
+            <>
+              <span>·</span>
+              <span>{episodeCount} ep{episodeCount !== 1 ? "s" : ""}</span>
+            </>
+          )}
         </div>
       </div>
       <span className="shrink-0 rounded bg-surface px-2 py-0.5 text-xs text-muted">
