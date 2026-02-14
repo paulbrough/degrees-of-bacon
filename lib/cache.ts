@@ -1,0 +1,110 @@
+import { prisma } from "@/lib/prisma";
+import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail } from "@/lib/types/tmdb";
+
+const PRODUCTION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const PERSON_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const RATING_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+interface CacheResult<T> {
+  data: T;
+  isStale: boolean;
+}
+
+function isStale(cachedAt: Date, ttlMs: number): boolean {
+  return Date.now() - cachedAt.getTime() > ttlMs;
+}
+
+// --- Production Cache ---
+
+export async function getCachedProduction(
+  tmdbId: number,
+  mediaType: "movie" | "tv"
+): Promise<CacheResult<TMDBMovieDetail | TMDBTvDetail> | null> {
+  const cached = await prisma.cachedProduction.findUnique({
+    where: { tmdbId_mediaType: { tmdbId, mediaType } },
+  });
+
+  if (!cached) return null;
+
+  return {
+    data: cached.data as unknown as TMDBMovieDetail | TMDBTvDetail,
+    isStale: isStale(cached.cachedAt, PRODUCTION_TTL_MS),
+  };
+}
+
+export async function cacheProduction(
+  tmdbId: number,
+  mediaType: "movie" | "tv",
+  data: TMDBMovieDetail | TMDBTvDetail
+): Promise<void> {
+  await prisma.cachedProduction.upsert({
+    where: { tmdbId_mediaType: { tmdbId, mediaType } },
+    update: { data: data as unknown as Record<string, unknown>, cachedAt: new Date() },
+    create: {
+      tmdbId,
+      mediaType,
+      data: data as unknown as Record<string, unknown>,
+      cachedAt: new Date(),
+    },
+  });
+}
+
+export async function getCachedImdbRating(
+  tmdbId: number,
+  mediaType: "movie" | "tv"
+): Promise<{ rating: number | null; isStale: boolean } | null> {
+  const cached = await prisma.cachedProduction.findUnique({
+    where: { tmdbId_mediaType: { tmdbId, mediaType } },
+    select: { imdbRating: true, cachedAt: true },
+  });
+
+  if (!cached || cached.imdbRating === null) return null;
+
+  return {
+    rating: cached.imdbRating,
+    isStale: isStale(cached.cachedAt, RATING_TTL_MS),
+  };
+}
+
+export async function updateCachedRating(
+  tmdbId: number,
+  mediaType: "movie" | "tv",
+  imdbRating: number | null
+): Promise<void> {
+  await prisma.cachedProduction.updateMany({
+    where: { tmdbId, mediaType },
+    data: { imdbRating },
+  });
+}
+
+// --- Person Cache ---
+
+export async function getCachedPerson(
+  tmdbId: number
+): Promise<CacheResult<TMDBPersonDetail> | null> {
+  const cached = await prisma.cachedPerson.findUnique({
+    where: { tmdbId },
+  });
+
+  if (!cached) return null;
+
+  return {
+    data: cached.data as unknown as TMDBPersonDetail,
+    isStale: isStale(cached.cachedAt, PERSON_TTL_MS),
+  };
+}
+
+export async function cachePerson(
+  tmdbId: number,
+  data: TMDBPersonDetail
+): Promise<void> {
+  await prisma.cachedPerson.upsert({
+    where: { tmdbId },
+    update: { data: data as unknown as Record<string, unknown>, cachedAt: new Date() },
+    create: {
+      tmdbId,
+      data: data as unknown as Record<string, unknown>,
+      cachedAt: new Date(),
+    },
+  });
+}
