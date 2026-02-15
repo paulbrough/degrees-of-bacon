@@ -1,14 +1,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #0a0a0f;
-  --color-surface: #14141f;
-  --color-surface-hover: #1e1e2e;
-  --color-border: #2a2a3a;
-  --color-foreground: #e4e4ef;
-  --color-muted: #8888a0;
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
+  --color-background: theme(colors.neutral.950);
+  --color-surface: theme(colors.neutral.900);
+  --color-surface-hover: theme(colors.neutral.800);
+  --color-border: theme(colors.neutral.700);
+  --color-foreground: theme(colors.neutral.50);
+  --color-muted: theme(colors.neutral.400);
+  --color-accent: theme(colors.orange.500);
+  --color-accent-hover: theme(colors.orange.400);
+}
+
+@theme inline {
+  --color-background: theme(colors.neutral.950);
+  --color-surface: theme(colors.neutral.900);
+  --color-surface-hover: theme(colors.neutral.800);
+  --color-border: theme(colors.neutral.700);
+  --color-foreground: theme(colors.neutral.50);
+  --color-muted: theme(colors.neutral.400);
+  --color-accent: theme(colors.amber.500);
+  --color-accent-hover: theme(colors.amber.400);
 }
 
 body {

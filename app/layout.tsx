@@ -10,7 +10,18 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Degrees of Bacon",
-  description: "Discover connections between your favorite movies, TV shows, and actors",
+  description:
+    "Discover connections between your favorite movies, TV shows, and actors",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -20,20 +31,35 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased min-h-screen flex flex-col`}>
+      <body
+        className={`${inter.className} antialiased min-h-screen flex flex-col`}
+      >
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
-            <Link href="/" className="shrink-0 text-lg font-bold tracking-tight hover:text-accent-hover transition-colors">
-              Degrees of Bacon
+            <Link
+              href="/"
+              className="shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <img
+                src="/bacon.svg"
+                alt="Degrees of Bacon"
+                className="h-8 w-8 brightness-0 invert"
+              />
             </Link>
             <div className="hidden sm:block sm:flex-1">
               <SearchBar />
             </div>
             <nav className="hidden items-center gap-4 text-sm sm:flex">
-              <Link href="/seenit" className="text-muted hover:text-foreground transition-colors">
+              <Link
+                href="/seenit"
+                className="text-muted hover:text-foreground transition-colors"
+              >
                 Seen It
               </Link>
-              <Link href="/compare" className="text-muted hover:text-foreground transition-colors">
+              <Link
+                href="/compare"
+                className="text-muted hover:text-foreground transition-colors"
+              >
                 Compare
               </Link>
               <AuthButton />

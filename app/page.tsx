@@ -8,7 +8,16 @@ function MediaRow({
   items,
 }: {
   title: string;
-  items: { id: number; media_type?: string; title?: string; name?: string; poster_path: string | null; release_date?: string; first_air_date?: string; vote_average: number }[];
+  items: {
+    id: number;
+    media_type?: string;
+    title?: string;
+    name?: string;
+    poster_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
+    vote_average: number;
+  }[];
 }) {
   if (!items || items.length === 0) return null;
 
@@ -25,7 +34,9 @@ function MediaRow({
               mediaType={mediaType}
               title={item.title || item.name || ""}
               posterPath={item.poster_path}
-              year={(item.release_date || item.first_air_date)?.slice(0, 4) ?? null}
+              year={
+                (item.release_date || item.first_air_date)?.slice(0, 4) ?? null
+              }
               rating={item.vote_average}
             />
           );
@@ -47,15 +58,17 @@ export default async function Home() {
   let recentTitle = "";
   try {
     const userId = await getAuthUserId();
-    const recent = userId ? await prisma.seenItEntry.findFirst({
-      where: { userId },
-      orderBy: { addedAt: "desc" },
-    }) : null;
+    const recent = userId
+      ? await prisma.seenItEntry.findFirst({
+          where: { userId },
+          orderBy: { addedAt: "desc" },
+        })
+      : null;
     if (recent) {
       recentTitle = recent.title;
       const recs = await getRecommendationsFor(
         recent.tmdbId,
-        recent.mediaType as "movie" | "tv"
+        recent.mediaType as "movie" | "tv",
       );
       recentRecs = recs.results ?? [];
     }
@@ -65,21 +78,8 @@ export default async function Home() {
 
   return (
     <div>
-      {/* Hero */}
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Degrees of Bacon
-        </h1>
-        <p className="mt-3 text-muted">
-          Discover connections between your favorite movies, TV shows, and actors.
-        </p>
-      </div>
-
       {/* Trending */}
-      <MediaRow
-        title="Trending This Week"
-        items={trending.results}
-      />
+      <MediaRow title="Trending This Week" items={trending.results} />
 
       {/* Because You Watched */}
       {recentRecs.length > 0 && (
@@ -92,7 +92,10 @@ export default async function Home() {
       {/* Popular Movies */}
       <MediaRow
         title="Popular Movies"
-        items={popularMovies.results.map((r) => ({ ...r, media_type: "movie" }))}
+        items={popularMovies.results.map((r) => ({
+          ...r,
+          media_type: "movie",
+        }))}
       />
 
       {/* Popular TV */}
