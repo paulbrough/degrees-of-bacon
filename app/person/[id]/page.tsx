@@ -5,6 +5,7 @@ import { fetchPerson } from "@/lib/fetch-production";
 import { Filmography } from "@/components/Filmography";
 import { PredictionResults } from "@/components/PredictionResults";
 import { ExpandableBio } from "@/components/ExpandableBio";
+import { PersonPhotoGallery } from "@/components/PersonPhotoGallery";
 
 function calculateAge(birthday: string, deathday: string | null): number {
   const birth = new Date(birthday);
@@ -107,47 +108,11 @@ export default async function PersonPage({
 
       {/* Photo Gallery */}
       {(taggedImages.length > 0 || profileImages.length > 1) && (
-        <section>
-          <h2 className="mb-4 text-lg font-semibold">Photos</h2>
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-            {profileImages.slice(0, 10).map((img) => {
-              const url = tmdbImageUrl(img.file_path, "w342");
-              if (!url) return null;
-              return (
-                <div
-                  key={img.file_path}
-                  className="relative h-[200px] w-[133px] shrink-0 overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={url}
-                    alt={`${person.name} photo`}
-                    fill
-                    sizes="133px"
-                    className="object-cover"
-                  />
-                </div>
-              );
-            })}
-            {taggedImages.slice(0, 10).map((img) => {
-              const url = tmdbImageUrl(img.file_path, "w342");
-              if (!url) return null;
-              return (
-                <div
-                  key={img.file_path}
-                  className="relative h-[200px] w-[300px] shrink-0 overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={url}
-                    alt={`${person.name} in ${img.media?.title || img.media?.name || "production"}`}
-                    fill
-                    sizes="300px"
-                    className="object-cover"
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <PersonPhotoGallery
+          profileImages={profileImages}
+          taggedImages={taggedImages}
+          personName={person.name}
+        />
       )}
     </div>
   );

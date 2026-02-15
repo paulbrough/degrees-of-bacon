@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
+import { ImageModal } from "@/components/ImageModal";
+import { useImageModal } from "@/components/hooks/useImageModal";
 
 interface PredictionEntry {
   id: number;
@@ -115,6 +117,9 @@ function TierSection({
 
   const { symbol, color } = iconMap[icon];
 
+  // Setup image modal for single-image mode
+  const imageModal = useImageModal();
+
   return (
     <div>
       <h3 className={`mb-2 flex items-center gap-2 text-sm font-medium ${color}`}>
@@ -154,8 +159,14 @@ function TierSection({
                   )}
                 </div>
               </div>
-              {taggedUrl && (
-                <div className="relative h-10 w-16 shrink-0 overflow-hidden rounded">
+              {taggedUrl && entry.taggedImagePath && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    imageModal.openImage(entry.taggedImagePath!, `Scene from ${entry.title}`);
+                  }}
+                  className="relative h-10 w-16 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent"
+                >
                   <Image
                     src={taggedUrl}
                     alt={`Scene from ${entry.title}`}
@@ -163,7 +174,7 @@ function TierSection({
                     sizes="64px"
                     className="object-cover"
                   />
-                </div>
+                </button>
               )}
               <span className="shrink-0 rounded bg-surface px-2 py-0.5 text-xs text-muted">
                 {entry.mediaType === "movie" ? "Movie" : "TV"}
@@ -172,6 +183,8 @@ function TierSection({
           );
         })}
       </div>
+
+      <ImageModal {...imageModal} />
     </div>
   );
 }

@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { RatingBadge } from "@/components/RatingBadge";
 import { CastSection } from "@/components/CastSection";
+import { ImageModal } from "@/components/ImageModal";
+import { useImageModal } from "@/components/hooks/useImageModal";
 import type { TMDBEpisodeDetail, TMDBTvDetail } from "@/lib/types/tmdb";
 
 interface EpisodeNav {
@@ -36,6 +40,13 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
 
   // Stills gallery
   const stills = episode.images?.stills ?? [];
+
+  // Setup image modal for stills gallery
+  const stillsGallery = stills.map((img) => ({
+    path: img.file_path,
+    alt: `${episode.name} still`,
+  }));
+  const imageModal = useImageModal(stillsGallery);
 
   return (
     <div>
@@ -255,9 +266,10 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
               const imgUrl = tmdbImageUrl(img.file_path, "w500");
               if (!imgUrl) return null;
               return (
-                <div
+                <button
                   key={img.file_path}
-                  className="relative aspect-video w-[280px] shrink-0 overflow-hidden rounded-lg bg-surface sm:w-[360px]"
+                  onClick={() => imageModal.openImage(img.file_path, `${episode.name} still`)}
+                  className="relative aspect-video w-[280px] shrink-0 cursor-pointer overflow-hidden rounded-lg bg-surface transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent sm:w-[360px]"
                 >
                   <Image
                     src={imgUrl}
@@ -266,12 +278,15 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
                     sizes="360px"
                     className="object-cover"
                   />
-                </div>
+                </button>
               );
             })}
           </div>
         </section>
       )}
+
+      {/* Image Modal */}
+      <ImageModal {...imageModal} />
     </div>
   );
 }
