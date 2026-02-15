@@ -29,13 +29,14 @@ export default async function MoviePage({
   const backdropUrl = tmdbImageUrl(movie.backdrop_path, "original");
   const posterUrl = tmdbImageUrl(movie.poster_path, "w500");
 
-  const directors = movie.credits?.crew?.filter((c) => c.job === "Director") ?? [];
-  const writers = movie.credits?.crew?.filter(
-    (c) => c.department === "Writing"
-  )?.slice(0, 5) ?? [];
-  const producers = movie.credits?.crew?.filter(
-    (c) => c.job === "Producer"
-  )?.slice(0, 5) ?? [];
+  const directors =
+    movie.credits?.crew?.filter((c) => c.job === "Director") ?? [];
+  const writers =
+    movie.credits?.crew
+      ?.filter((c) => c.department === "Writing")
+      ?.slice(0, 5) ?? [];
+  const producers =
+    movie.credits?.crew?.filter((c) => c.job === "Producer")?.slice(0, 5) ?? [];
 
   const runtimeStr = movie.runtime
     ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`
@@ -104,7 +105,7 @@ export default async function MoviePage({
               </p>
             )}
 
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="mt-2 flex flex-row gap-2 sm:flex-row sm:flex-wrap">
               <SeenItButton
                 tmdbId={movie.id}
                 mediaType="movie"
@@ -131,10 +132,16 @@ export default async function MoviePage({
           <div className="flex flex-wrap gap-6 text-sm">
             {directors.length > 0 && (
               <div>
-                <span className="text-muted">Director{directors.length > 1 ? "s" : ""}</span>
+                <span className="text-muted">
+                  Director{directors.length > 1 ? "s" : ""}
+                </span>
                 <div className="mt-1 flex gap-2">
                   {directors.map((d) => (
-                    <Link key={d.id} href={`/person/${d.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={d.id}
+                      href={`/person/${d.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {d.name}
                     </Link>
                   ))}
@@ -146,7 +153,11 @@ export default async function MoviePage({
                 <span className="text-muted">Writers</span>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {writers.map((w) => (
-                    <Link key={`${w.id}-${w.job}`} href={`/person/${w.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={`${w.id}-${w.job}`}
+                      href={`/person/${w.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {w.name}
                     </Link>
                   ))}
@@ -158,7 +169,11 @@ export default async function MoviePage({
                 <span className="text-muted">Producers</span>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {producers.map((p) => (
-                    <Link key={`${p.id}-${p.job}`} href={`/person/${p.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={`${p.id}-${p.job}`}
+                      href={`/person/${p.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {p.name}
                     </Link>
                   ))}
