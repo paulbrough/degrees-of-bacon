@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { TMDBMovieDetail, TMDBTvDetail, TMDBPersonDetail, TMDBSeasonDetail, TMDBEpisodeDetail } from "@/lib/types/tmdb";
 
 const PRODUCTION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
