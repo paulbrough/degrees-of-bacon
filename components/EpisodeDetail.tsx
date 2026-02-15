@@ -52,18 +52,18 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="relative flex gap-8 px-4 py-12 sm:px-8 sm:py-16">
+        <div className="relative flex flex-col gap-4 px-4 py-12 sm:flex-row sm:gap-8 sm:px-8 sm:py-16">
           {posterUrl && (
             <Link
               href={`/tv/${show.id}`}
-              className="relative hidden aspect-[2/3] w-[200px] shrink-0 overflow-hidden rounded-lg shadow-xl transition-opacity hover:opacity-80 sm:block"
+              className="relative aspect-[2/3] w-[120px] shrink-0 self-start overflow-hidden rounded-lg shadow-xl transition-opacity hover:opacity-80 sm:w-[200px]"
             >
               <Image
                 src={posterUrl}
                 alt={show.name}
                 fill
                 priority
-                sizes="200px"
+                sizes="(min-width: 640px) 200px, 120px"
                 className="object-cover"
               />
             </Link>
@@ -144,42 +144,42 @@ export function EpisodeDetail({ episode, show, prev, next }: EpisodeDetailProps)
                 )}
               </div>
             )}
+
+            {/* Episode navigation — inside hero so it's above the fold */}
+            <div className="mt-2 flex items-center justify-between gap-4">
+              {prev ? (
+                <Link
+                  href={`/tv/${show.id}/season/${prev.seasonNumber}/episode/${prev.episodeNumber}`}
+                  className="flex items-center gap-1 rounded-lg bg-surface px-4 py-2 text-sm transition-colors hover:bg-surface-hover"
+                >
+                  <span>&larr;</span>
+                  <span className="hidden sm:inline">{prev.label}</span>
+                  <span className="sm:hidden">Prev</span>
+                </Link>
+              ) : (
+                <div />
+              )}
+              <Link
+                href={`/tv/${show.id}/episodes#season-${episode.season_number}`}
+                className="text-sm text-muted hover:text-accent-hover"
+              >
+                All episodes
+              </Link>
+              {next ? (
+                <Link
+                  href={`/tv/${show.id}/season/${next.seasonNumber}/episode/${next.episodeNumber}`}
+                  className="flex items-center gap-1 rounded-lg bg-surface px-4 py-2 text-sm transition-colors hover:bg-surface-hover"
+                >
+                  <span className="hidden sm:inline">{next.label}</span>
+                  <span className="sm:hidden">Next</span>
+                  <span>&rarr;</span>
+                </Link>
+              ) : (
+                <div />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Prev/Next navigation */}
-      <div className="mb-8 flex items-center justify-between gap-4">
-        {prev ? (
-          <Link
-            href={`/tv/${show.id}/season/${prev.seasonNumber}/episode/${prev.episodeNumber}`}
-            className="flex items-center gap-1 rounded-lg bg-surface px-4 py-2 text-sm transition-colors hover:bg-surface-hover"
-          >
-            <span>&larr;</span>
-            <span className="hidden sm:inline">{prev.label}</span>
-            <span className="sm:hidden">Prev</span>
-          </Link>
-        ) : (
-          <div />
-        )}
-        <Link
-          href={`/tv/${show.id}/episodes#season-${episode.season_number}`}
-          className="text-sm text-muted hover:text-accent-hover"
-        >
-          All episodes
-        </Link>
-        {next ? (
-          <Link
-            href={`/tv/${show.id}/season/${next.seasonNumber}/episode/${next.episodeNumber}`}
-            className="flex items-center gap-1 rounded-lg bg-surface px-4 py-2 text-sm transition-colors hover:bg-surface-hover"
-          >
-            <span className="hidden sm:inline">{next.label}</span>
-            <span className="sm:hidden">Next</span>
-            <span>&rarr;</span>
-          </Link>
-        ) : (
-          <div />
-        )}
       </div>
 
       {/* Top Cast (series regulars) */}

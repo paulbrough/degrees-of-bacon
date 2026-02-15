@@ -4,6 +4,7 @@ import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { fetchPerson } from "@/lib/fetch-production";
 import { Filmography } from "@/components/Filmography";
 import { PredictionResults } from "@/components/PredictionResults";
+import { ExpandableBio } from "@/components/ExpandableBio";
 
 function calculateAge(birthday: string, deathday: string | null): number {
   const birth = new Date(birthday);
@@ -88,11 +89,7 @@ export default async function PersonPage({
           </div>
 
           {person.biography && (
-            <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
-              {person.biography.length > 800
-                ? person.biography.slice(0, 800) + "..."
-                : person.biography}
-            </p>
+            <ExpandableBio text={person.biography} />
           )}
         </div>
       </div>

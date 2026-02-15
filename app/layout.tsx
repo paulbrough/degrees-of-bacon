@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import { SearchBar } from "@/components/SearchBar";
 import { AuthButton } from "@/components/AuthButton";
+import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,12 +26,14 @@ export default function RootLayout({
             <Link href="/" className="shrink-0 text-lg font-bold tracking-tight hover:text-accent-hover transition-colors">
               Degrees of Bacon
             </Link>
-            <SearchBar />
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/watchlist" className="hidden text-muted hover:text-foreground transition-colors sm:block">
+            <div className="hidden sm:block sm:flex-1">
+              <SearchBar />
+            </div>
+            <nav className="hidden items-center gap-4 text-sm sm:flex">
+              <Link href="/watchlist" className="text-muted hover:text-foreground transition-colors">
                 Watch List
               </Link>
-              <Link href="/compare" className="hidden text-muted hover:text-foreground transition-colors sm:block">
+              <Link href="/compare" className="text-muted hover:text-foreground transition-colors">
                 Compare
               </Link>
               <AuthButton />
@@ -38,11 +41,11 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 pb-24 sm:pb-8">
           {children}
         </main>
 
-        <footer className="border-t border-border py-6">
+        <footer className="hidden border-t border-border py-6 sm:block">
           <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 text-sm text-muted">
             <span>Powered by</span>
             <a
@@ -55,6 +58,8 @@ export default function RootLayout({
             </a>
           </div>
         </footer>
+
+        <BottomNav />
       </body>
     </html>
   );

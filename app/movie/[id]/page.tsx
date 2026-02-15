@@ -55,15 +55,15 @@ export default async function MoviePage({
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        <div className="relative flex gap-8 px-4 py-12 sm:px-8 sm:py-16">
+        <div className="relative flex flex-col gap-4 px-4 py-12 sm:flex-row sm:gap-8 sm:px-8 sm:py-16">
           {posterUrl && (
-            <div className="relative hidden aspect-[2/3] w-[200px] shrink-0 overflow-hidden rounded-lg shadow-xl sm:block">
+            <div className="relative aspect-[2/3] w-[120px] shrink-0 self-start overflow-hidden rounded-lg shadow-xl sm:w-[200px]">
               <Image
                 src={posterUrl}
                 alt={movie.title}
                 fill
                 priority
-                sizes="200px"
+                sizes="(min-width: 640px) 200px, 120px"
                 className="object-cover"
               />
             </div>
