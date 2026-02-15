@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     sort === "rating" ? "rating" :
     "addedAt";
 
-  const entries = await prisma.watchListEntry.findMany({
+  const entries = await prisma.seenItEntry.findMany({
     where,
     orderBy: { [orderByField]: order === "asc" ? "asc" : "desc" },
   });
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Ensure Prisma user exists — separate from entry creation so a user-table
-  // constraint error doesn't get misreported as "Already on watch list"
+  // constraint error doesn't get misreported as "Already marked as seen"
   try {
     await ensurePrismaUser(userId, user!.email ?? "");
   } catch (e: unknown) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const entry = await prisma.watchListEntry.create({
+    const entry = await prisma.seenItEntry.create({
       data: {
         userId,
         tmdbId,
@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg.includes("P2002")) {
-      return NextResponse.json({ error: "Already on watch list" }, { status: 409 });
+      return NextResponse.json({ error: "Already marked as seen" }, { status: 409 });
     }
-    console.error("Watchlist POST error:", e);
+    console.error("SeenIt POST error:", e);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  await prisma.watchListEntry.deleteMany({
+  await prisma.seenItEntry.deleteMany({
     where: { userId, tmdbId, mediaType },
   });
 

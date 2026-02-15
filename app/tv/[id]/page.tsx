@@ -8,7 +8,7 @@ import { IMDbRating } from "@/components/IMDbRating";
 import { CastSection } from "@/components/CastSection";
 import { EpisodeListSection } from "@/components/EpisodeListSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
-import { WatchListButton } from "@/components/WatchListButton";
+import { SeenItButton } from "@/components/SeenItButton";
 import type { TMDBCastMember } from "@/lib/types/tmdb";
 
 export default async function TvPage({
@@ -144,7 +144,7 @@ export default async function TvPage({
             )}
 
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <WatchListButton
+              <SeenItButton
                 tmdbId={show.id}
                 mediaType="tv"
                 title={show.name}

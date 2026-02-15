@@ -5,7 +5,7 @@ import { getAuthUserId } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   const userId = await getAuthUserId();
   if (!userId) {
-    return NextResponse.json({ onWatchList: false });
+    return NextResponse.json({ hasSeen: false });
   }
 
   const { searchParams } = request.nextUrl;
@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
   const mediaType = searchParams.get("mediaType") || "";
 
   if (isNaN(tmdbId) || !mediaType) {
-    return NextResponse.json({ onWatchList: false });
+    return NextResponse.json({ hasSeen: false });
   }
 
-  const entry = await prisma.watchListEntry.findFirst({
+  const entry = await prisma.seenItEntry.findFirst({
     where: { userId, tmdbId, mediaType },
     select: { id: true },
   });
 
-  return NextResponse.json({ onWatchList: !!entry });
+  return NextResponse.json({ hasSeen: !!entry });
 }

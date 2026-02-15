@@ -30,8 +30,8 @@ export default function RootLayout({
               <SearchBar />
             </div>
             <nav className="hidden items-center gap-4 text-sm sm:flex">
-              <Link href="/watchlist" className="text-muted hover:text-foreground transition-colors">
-                Watch List
+              <Link href="/seenit" className="text-muted hover:text-foreground transition-colors">
+                Seen It
               </Link>
               <Link href="/compare" className="text-muted hover:text-foreground transition-colors">
                 Compare

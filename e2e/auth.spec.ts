@@ -20,8 +20,8 @@ test.describe("Auth", () => {
     await expect(page.locator("main").getByRole("link", { name: /sign in/i })).toBeVisible();
   });
 
-  test("unauthenticated watchlist redirects to sign in", async ({ page }) => {
-    await page.goto("/watchlist");
+  test("unauthenticated seenit redirects to sign in", async ({ page }) => {
+    await page.goto("/seenit");
     // Should redirect to sign in
     await expect(page).toHaveURL(/\/auth\/signin/);
     await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();

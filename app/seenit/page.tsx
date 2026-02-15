@@ -7,7 +7,7 @@ import Image from "next/image";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { RatingBadge } from "@/components/RatingBadge";
 
-interface WatchListEntry {
+interface SeenItEntry {
   id: string;
   tmdbId: number;
   mediaType: "movie" | "tv";
@@ -21,8 +21,8 @@ interface WatchListEntry {
 type SortField = "addedAt" | "title" | "year" | "rating";
 type FilterType = "all" | "movie" | "tv";
 
-export default function WatchListPage() {
-  const [entries, setEntries] = useState<WatchListEntry[]>([]);
+export default function SeenItPage() {
+  const [entries, setEntries] = useState<SeenItEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortField>("addedAt");
@@ -41,20 +41,20 @@ export default function WatchListPage() {
       ...(search.trim() ? { q: search.trim() } : {}),
     });
     try {
-      const res = await fetch(`/api/watchlist?${params}`);
+      const res = await fetch(`/api/seenit?${params}`);
       if (res.status === 401) {
         router.push("/auth/signin");
         return;
       }
       if (!res.ok) {
-        setError("Failed to load watch list. Please try again.");
+        setError("Failed to load seen items. Please try again.");
         setEntries([]);
         return;
       }
       const data = await res.json();
       setEntries(data.entries ?? []);
     } catch {
-      setError("Failed to load watch list. Please try again.");
+      setError("Failed to load seen items. Please try again.");
       setEntries([]);
     } finally {
       setLoading(false);
@@ -68,7 +68,7 @@ export default function WatchListPage() {
   const removeEntry = async (tmdbId: number, mediaType: string) => {
     setEntries((prev) => prev.filter((e) => !(e.tmdbId === tmdbId && e.mediaType === mediaType)));
     try {
-      await fetch("/api/watchlist", {
+      await fetch("/api/seenit", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tmdbId, mediaType }),
@@ -95,7 +95,7 @@ export default function WatchListPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Watch List</h1>
+      <h1 className="mb-6 text-2xl font-bold">Seen It</h1>
 
       {/* Controls */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
@@ -143,7 +143,7 @@ export default function WatchListPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search watch list..."
+          placeholder="Search seen titles..."
           className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-foreground placeholder:text-muted outline-none focus:border-accent"
         />
       </div>
@@ -157,7 +157,7 @@ export default function WatchListPage() {
         </div>
       ) : entries.length === 0 ? (
         <div className="py-12 text-center">
-          <p className="text-muted">Your watch list is empty.</p>
+          <p className="text-muted">You haven&apos;t marked anything as seen.</p>
           <p className="mt-2 text-sm text-muted">
             Add movies and TV shows from their detail pages.
           </p>
@@ -200,7 +200,7 @@ export default function WatchListPage() {
                 <button
                   onClick={() => removeEntry(entry.tmdbId, entry.mediaType)}
                   className="absolute right-1 top-1 rounded-full bg-black/70 p-1.5 text-xs text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
-                  title="Remove from watch list"
+                  title="Remove from seen"
                 >
                   ✕
                 </button>

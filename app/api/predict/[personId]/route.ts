@@ -25,17 +25,17 @@ export async function GET(
     const person = await fetchPerson(tmdbId);
     const castCredits = person.combined_credits?.cast ?? [];
 
-    // Get user's watch list
-    const watchList = await prisma.watchListEntry.findMany({
+    // Get user's seen list
+    const seenList = await prisma.seenItEntry.findMany({
       where: { userId },
       select: { tmdbId: true, mediaType: true },
     });
 
-    // Get genre data for watched titles from cache
-    const watchedTmdbIds = watchList.map((w) => w.tmdbId);
-    const cachedProductions = watchedTmdbIds.length > 0
+    // Get genre data for seen titles from cache
+    const seenTmdbIds = seenList.map((w) => w.tmdbId);
+    const cachedProductions = seenTmdbIds.length > 0
       ? await prisma.cachedProduction.findMany({
-          where: { tmdbId: { in: watchedTmdbIds } },
+          where: { tmdbId: { in: seenTmdbIds } },
           select: { tmdbId: true, mediaType: true, data: true },
         })
       : [];
@@ -58,7 +58,7 @@ export async function GET(
       file_path: img.file_path,
     }));
 
-    const result = predictKnownFrom(castCredits, watchList, genreData, taggedImages);
+    const result = predictKnownFrom(castCredits, seenList, genreData, taggedImages);
 
     return NextResponse.json(result);
   } catch (e) {

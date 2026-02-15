@@ -52,7 +52,7 @@ export function BottomNav() {
   const navItems = [
     { href: "/", label: "Home", Icon: HomeIcon, match: (p: string) => p === "/" },
     { href: "#search", label: "Search", Icon: SearchIcon, match: () => false, action: () => setSearchOpen(true) },
-    { href: "/watchlist", label: "Watch List", Icon: ListIcon, match: (p: string) => p.startsWith("/watchlist") },
+    { href: "/seenit", label: "Seen It", Icon: ListIcon, match: (p: string) => p.startsWith("/seenit") },
     { href: "/compare", label: "Compare", Icon: CompareIcon, match: (p: string) => p.startsWith("/compare") },
     { href: "/auth/signin", label: "Profile", Icon: ProfileIcon, match: (p: string) => p.startsWith("/auth") },
   ];

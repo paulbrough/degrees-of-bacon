@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-interface WatchListButtonProps {
+interface SeenItButtonProps {
   tmdbId: number;
   mediaType: "movie" | "tv";
   title: string;
@@ -12,52 +12,52 @@ interface WatchListButtonProps {
   rating: number;
 }
 
-export function WatchListButton({
+export function SeenItButton({
   tmdbId,
   mediaType,
   title,
   posterPath,
   year,
   rating,
-}: WatchListButtonProps) {
-  const [onList, setOnList] = useState(false);
+}: SeenItButtonProps) {
+  const [hasSeen, setHasSeen] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    fetch(`/api/watchlist/check?tmdbId=${tmdbId}&mediaType=${mediaType}`)
+    fetch(`/api/seenit/check?tmdbId=${tmdbId}&mediaType=${mediaType}`)
       .then((res) => res.json())
-      .then((data) => setOnList(data.onWatchList))
+      .then((data) => setHasSeen(data.hasSeen))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [tmdbId, mediaType]);
 
   const toggle = async () => {
-    const prev = onList;
+    const prev = hasSeen;
 
     try {
       if (prev) {
-        const res = await fetch("/api/watchlist", {
+        const res = await fetch("/api/seenit", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tmdbId, mediaType }),
         });
         if (res.status === 401) { router.push("/auth/signin"); return; }
         if (!res.ok) throw new Error();
-        setOnList(false);
+        setHasSeen(false);
       } else {
-        const res = await fetch("/api/watchlist", {
+        const res = await fetch("/api/seenit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tmdbId, mediaType, title, posterPath, year, rating }),
         });
         if (res.status === 401) { router.push("/auth/signin"); return; }
-        if (res.status === 409) { setOnList(true); return; } // genuinely already exists
+        if (res.status === 409) { setHasSeen(true); return; } // genuinely already exists
         if (!res.ok) throw new Error();
-        setOnList(true);
+        setHasSeen(true);
       }
     } catch {
-      setOnList(prev); // Revert on error
+      setHasSeen(prev); // Revert on error
     }
   };
 
@@ -76,12 +76,12 @@ export function WatchListButton({
     <button
       onClick={toggle}
       className={`mt-2 w-fit rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-        onList
+        hasSeen
           ? "bg-accent text-white hover:bg-accent-hover"
           : "border border-accent text-accent hover:bg-accent/10"
       }`}
     >
-      {onList ? "On Watch List" : "Add to Watch List"}
+      {hasSeen ? "Seen" : "Mark as Seen"}
     </button>
   );
 }

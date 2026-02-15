@@ -42,12 +42,12 @@ export default async function Home() {
     getPopular("tv").catch(() => ({ results: [] })),
   ]);
 
-  // "Because you watched" — find most recent watch list entry
+  // "Because you watched" — find most recent seen entry
   let recentRecs: typeof trending.results = [];
   let recentTitle = "";
   try {
     const userId = await getAuthUserId();
-    const recent = userId ? await prisma.watchListEntry.findFirst({
+    const recent = userId ? await prisma.seenItEntry.findFirst({
       where: { userId },
       orderBy: { addedAt: "desc" },
     }) : null;

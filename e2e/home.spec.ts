@@ -36,18 +36,18 @@ test.describe("Home / Discovery", () => {
     await expect(page.getByText("Popular TV Shows")).toBeVisible();
   });
 
-  test("shows Because You Watched section with watch list entry", async ({ page }) => {
-    // Add a movie to the watch list first
+  test("shows Because You Watched section with seen entry", async ({ page }) => {
+    // Add a movie to the seen list first
     await page.goto("/movie/550"); // Fight Club
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // Wait for button to load
-    await expect(page.getByRole("button", { name: /add to watch list|on watch list/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /mark as seen|seen/i })).toBeVisible();
 
-    const addButton = page.getByRole("button", { name: /add to watch list/i });
+    const addButton = page.getByRole("button", { name: /mark as seen/i });
     if (await addButton.isVisible()) {
       await Promise.all([
-        page.waitForResponse((r) => r.url().includes("/api/watchlist") && r.request().method() === "POST"),
+        page.waitForResponse((r) => r.url().includes("/api/seenit") && r.request().method() === "POST"),
         addButton.click(),
       ]);
     }
@@ -58,10 +58,10 @@ test.describe("Home / Discovery", () => {
 
     // Cleanup
     await page.goto("/movie/550");
-    await expect(page.getByRole("button", { name: /on watch list/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^seen$/i })).toBeVisible();
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes("/api/watchlist") && r.request().method() === "DELETE"),
-      page.getByRole("button", { name: /on watch list/i }).click(),
+      page.waitForResponse((r) => r.url().includes("/api/seenit") && r.request().method() === "DELETE"),
+      page.getByRole("button", { name: /^seen$/i }).click(),
     ]);
   });
 });

@@ -8,26 +8,26 @@ datasource db {
 }
 
 model User {
-  id        String           @id @default(uuid())
-  email     String           @unique
+  id        String        @id @default(uuid())
+  email     String        @unique
   name      String?
-  createdAt DateTime         @default(now()) @map("created_at")
-  watchList WatchListEntry[]
+  createdAt DateTime      @default(now()) @map("created_at")
+  seenItems SeenItEntry[]
 
   @@map("users")
 }
 
-model WatchListEntry {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  tmdbId    Int      @map("tmdb_id")
-  mediaType String   @map("media_type")
-  title     String
-  posterPath String? @map("poster_path")
-  year      String?  @map("year")
-  rating    Float?   @map("rating")
-  addedAt   DateTime @default(now()) @map("added_at")
+model SeenItEntry {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id])
+  tmdbId     Int      @map("tmdb_id")
+  mediaType  String   @map("media_type")
+  title      String
+  posterPath String?  @map("poster_path")
+  year       String?  @map("year")
+  rating     Float?   @map("rating")
+  addedAt    DateTime @default(now()) @map("added_at")
 
   @@unique([userId, tmdbId, mediaType])
   @@index([userId])

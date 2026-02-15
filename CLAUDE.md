@@ -61,10 +61,10 @@ model User {
   email     String   @unique
   name      String?
   createdAt DateTime @default(now())
-  watchList WatchListEntry[]
+  seenItems SeenItEntry[]
 }
 
-model WatchListEntry {
+model SeenItEntry {
   id           String   @id @default(uuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id])
@@ -73,7 +73,7 @@ model WatchListEntry {
   title        String   // denormalized for quick display
   posterPath   String?  // denormalized
   addedAt      DateTime @default(now())
-  
+
   @@unique([userId, tmdbId, mediaType])
   @@index([userId])
 }
@@ -129,7 +129,7 @@ model CachedPerson {
   - Clicking a person navigates to their person page
 - Key crew highlighted: director(s), creator(s)/showrunner(s), writers, producers
 - "Compare with..." button — navigates to compare page with this production pre-filled
-- "Add to Watch List" / "On Watch List" toggle button
+- "Mark as Seen" / "Seen" toggle button
 - Recommendations section: TMDB's built-in recommendations + similar titles
 - Images/screenshots gallery from TMDB images endpoint
 
@@ -140,7 +140,7 @@ model CachedPerson {
   - Each entry shows: poster thumbnail, title, year, their role/character, and the production's rating
 - **"Where Do I Know Them From?"** button (opt-in, prominent placement)
   - When clicked, runs prediction logic (see section 7)
-  - Shows results in tiers: ✅ Confirmed (on your watch list), 🟡 Likely, 🔵 Possible
+  - Shows results in tiers: ✅ Confirmed (you've seen this), 🟡 Likely, 🔵 Possible
   - Each result shows: production title, poster, their character name, and a tagged photo if available
 - Photo gallery: profile photos + tagged images (photos of them in specific productions)
 - "Compare" shortcut: pick any two productions from their filmography to compare
@@ -157,15 +157,15 @@ model CachedPerson {
   - Other crew
 - Each person entry is clickable → navigates to their person page
 - **"Include likely watches"** toggle (off by default)
-  - When enabled, factors in predicted watch list for the "what else connects these" context
+  - When enabled, factors in predicted seen list for the "what else connects these" context
 - Visual design: side-by-side layout with the overlap in the center
 
-### 5. Watch List (`/watchlist`)
+### 5. Seen It (`/seenit`)
 
-- Grid/list view of everything you've marked as watched
+- Grid/list view of everything you've marked as seen
 - Sortable: date added, title, year, rating
 - Filterable: movies/TV/all, genre
-- Search within watch list
+- Search within seen items
 - Quick-remove button on each entry
 - Used as input for the prediction engine and the compare feature
 
@@ -184,27 +184,27 @@ This is opt-in only. It runs when a user clicks the button on a person page.
 **Logic:**
 
 1. Fetch the person's full filmography (from cache or TMDB)
-2. Get the user's explicit watch list
-3. Immediately separate: ✅ Confirmed = intersection of filmography and watch list
+2. Get the user's explicit seen list
+3. Immediately separate: ✅ Confirmed = intersection of filmography and seen list
 4. For remaining titles, score each using:
    - **Popularity** (TMDB `popularity` field): heavily popular titles score higher — if 50M people watched it and you watch that genre, odds are you did too
-   - **Genre overlap**: compare genres against the user's watch list genre distribution
+   - **Genre overlap**: compare genres against the user's seen list genre distribution
    - **Network/platform match**: if the user watches a lot of HBO or Netflix originals, weight those higher
-   - **Cast/crew overlap**: if 3 other actors from the user's watch list are also in this title, score it higher
-   - **Era clustering**: if the user's watch list is heavy on 2015-2020 content, titles from that era score higher
+   - **Cast/crew overlap**: if 3 other actors from the user's seen list are also in this title, score it higher
+   - **Era clustering**: if the user's seen list is heavy on 2015-2020 content, titles from that era score higher
 5. Classify: 🟡 Likely (score above threshold X), 🔵 Possible (score above threshold Y)
 6. Return results with confidence tiers
 
 **Important implementation notes:**
-- All scoring runs against cached data + watch list — minimal API calls needed at runtime
+- All scoring runs against cached data + seen list — minimal API calls needed at runtime
 - Cache the prediction results per user per person for the session
 - Show a brief loading state when calculating
-- This feature improves as the watch list grows — note that to the user if their watch list is small
+- This feature improves as the seen list grows — note that to the user if their seen list is small
 
 ### 8. Discovery / Home Page (`/`)
 
 - Trending movies and TV (TMDB `/trending/all/week`)
-- Personalized section if logged in with a watch list: "Because you watched X" using TMDB recommendations endpoint seeded by recent watch list additions
+- Personalized section if logged in with seen items: "Because you watched X" using TMDB recommendations endpoint seeded by recent seen items
 - Popular and top-rated sections
 - All sections are horizontally scrollable cards with poster, title, year, rating
 
@@ -220,7 +220,7 @@ All external API calls are server-side only:
 /api/ratings/[imdbId]                    → cached OMDb rating lookup
 /api/compare?a={id}&aType={type}&b={id}&bType={type} → compare two productions
 /api/predict/[personId]                  → "Where do I know them from?" engine
-/api/watchlist                           → CRUD for watch list entries
+/api/seenit                              → CRUD for seen entries
 /api/trending                            → cached trending content
 ```
 
@@ -246,7 +246,7 @@ All external API calls are server-side only:
 ## Testing
 
 - Use Playwright for E2E testing (user has the Playwright Claude Code plugin)
-- Test flows: search → detail page, add/remove watch list, compare two productions, "Where do I know them from?" flow
+- Test flows: search → detail page, mark as seen/remove, compare two productions, "Where do I know them from?" flow
 - Test cache behavior: verify API calls are avoided on cache hits
 
 ## Project Structure
@@ -259,7 +259,7 @@ All external API calls are server-side only:
   /tv/[id]/page.tsx          — TV detail
   /person/[id]/page.tsx      — person detail
   /compare/page.tsx          — compare two productions
-  /watchlist/page.tsx        — user's watch list
+  /seenit/page.tsx           — user's seen items
   /api/
     /search/route.ts
     /movie/[id]/route.ts
@@ -268,7 +268,7 @@ All external API calls are server-side only:
     /ratings/[imdbId]/route.ts
     /compare/route.ts
     /predict/[personId]/route.ts
-    /watchlist/route.ts
+    /seenit/route.ts
     /trending/route.ts
 /lib
   /tmdb.ts                   — TMDB API client
@@ -283,7 +283,7 @@ All external API calls are server-side only:
   /ProductionCard.tsx
   /PersonCard.tsx
   /RatingBadge.tsx
-  /WatchListButton.tsx
+  /SeenItButton.tsx
   /CompareView.tsx
   /PredictionResults.tsx
 ```
@@ -295,7 +295,7 @@ All external API calls are server-side only:
 3. Search (universal search bar + results page)
 4. Production detail pages (movie + TV)
 5. Person detail pages with filmography
-6. Watch list (add/remove/view)
+6. Seen It (mark as seen/remove/view)
 7. OMDb integration for IMDB ratings
 8. Compare feature
 9. "Where Do I Know Them From?" prediction engine

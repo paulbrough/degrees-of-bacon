@@ -24,24 +24,24 @@ test.describe("Where Do I Know Them From?", () => {
     await expect(page.getByRole("button", { name: /hide results/i })).toBeVisible({ timeout: 15000 });
   });
 
-  test("confirmed tier shows watch list matches", async ({ page }) => {
+  test("confirmed tier shows seen matches", async ({ page }) => {
     // Use Se7en (id 807) — a movie unique to this test to avoid parallel test interference
     await page.goto("/movie/807");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    // Wait for watchlist button to finish loading
-    await expect(page.getByRole("button", { name: /add to watch list|on watch list/i })).toBeVisible();
+    // Wait for seen button to finish loading
+    await expect(page.getByRole("button", { name: /mark as seen|seen/i })).toBeVisible();
 
-    // Add if not already on list
-    const addButton = page.getByRole("button", { name: /add to watch list/i });
+    // Add if not already marked
+    const addButton = page.getByRole("button", { name: /mark as seen/i });
     if (await addButton.isVisible()) {
       const [response] = await Promise.all([
-        page.waitForResponse((r) => r.url().includes("/api/watchlist") && r.request().method() === "POST"),
+        page.waitForResponse((r) => r.url().includes("/api/seenit") && r.request().method() === "POST"),
         addButton.click(),
       ]);
       expect([201, 409]).toContain(response.status());
     }
-    await expect(page.getByRole("button", { name: /on watch list/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^seen$/i })).toBeVisible();
 
     // Go to Brad Pitt's page (he's in Se7en)
     await page.goto("/person/287");
@@ -59,25 +59,25 @@ test.describe("Where Do I Know Them From?", () => {
 
     // Cleanup
     await page.goto("/movie/807");
-    await expect(page.getByRole("button", { name: /add to watch list|on watch list/i })).toBeVisible();
-    const onListButton = page.getByRole("button", { name: /on watch list/i });
+    await expect(page.getByRole("button", { name: /mark as seen|seen/i })).toBeVisible();
+    const onListButton = page.getByRole("button", { name: /^seen$/i });
     if (await onListButton.isVisible()) {
       const [deleteRes] = await Promise.all([
-        page.waitForResponse((r) => r.url().includes("/api/watchlist") && r.request().method() === "DELETE"),
+        page.waitForResponse((r) => r.url().includes("/api/seenit") && r.request().method() === "DELETE"),
         onListButton.click(),
       ]);
       expect(deleteRes.status()).toBe(200);
     }
   });
 
-  test("shows add more message with small watch list", async ({ page }) => {
+  test("shows mark more message with small seen list", async ({ page }) => {
     await page.goto("/person/287"); // Brad Pitt
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     await page.getByRole("button", { name: /where do i know them from/i }).click();
     await expect(page.getByRole("button", { name: /hide results/i })).toBeVisible({ timeout: 15000 });
 
-    // With empty/small watch list, should show "add more" message
-    await expect(page.getByText(/add more/i)).toBeVisible();
+    // With empty/small seen list, should show "mark more" message
+    await expect(page.getByText(/mark more/i)).toBeVisible();
   });
 });

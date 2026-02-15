@@ -21,7 +21,7 @@ interface PredictionData {
   confirmed: PredictionEntry[];
   likely: PredictionEntry[];
   possible: PredictionEntry[];
-  watchListSize: number;
+  seenCount: number;
 }
 
 export function PredictionResults({ personId }: { personId: number }) {
@@ -72,20 +72,20 @@ export function PredictionResults({ personId }: { personId: number }) {
 
       {expanded && data && (
         <div className="mt-6 space-y-6">
-          {data.watchListSize < 5 && (
+          {data.seenCount < 5 && (
             <p className="text-sm text-muted">
-              Your watch list has {data.watchListSize} {data.watchListSize === 1 ? "item" : "items"}.
-              Add more to get better predictions.
+              You&apos;ve marked {data.seenCount} {data.seenCount === 1 ? "title" : "titles"} as seen.
+              Mark more to get better predictions.
             </p>
           )}
 
-          <TierSection icon="check" label="Confirmed" sublabel="On your watch list" entries={data.confirmed} />
+          <TierSection icon="check" label="Confirmed" sublabel="You've seen this" entries={data.confirmed} />
           <TierSection icon="likely" label="Likely" sublabel="High probability you've seen" entries={data.likely} />
           <TierSection icon="possible" label="Possible" sublabel="You might have seen" entries={data.possible} />
 
           {data.confirmed.length === 0 && data.likely.length === 0 && data.possible.length === 0 && (
             <p className="text-sm text-muted">
-              No matches found. Try adding more titles to your watch list.
+              No matches found. Try marking more titles as seen.
             </p>
           )}
         </div>

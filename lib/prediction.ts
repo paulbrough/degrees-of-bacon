@@ -1,6 +1,6 @@
 import type { TMDBPersonCreditAsCast } from "@/lib/types/tmdb";
 
-interface WatchListItem {
+interface SeenItem {
   tmdbId: number;
   mediaType: string;
 }
@@ -27,7 +27,7 @@ export interface PredictionResult {
   confirmed: PredictionEntry[];
   likely: PredictionEntry[];
   possible: PredictionEntry[];
-  watchListSize: number;
+  seenCount: number;
 }
 
 const LIKELY_THRESHOLD = 0.6;
@@ -35,15 +35,15 @@ const POSSIBLE_THRESHOLD = 0.3;
 
 export function predictKnownFrom(
   castCredits: TMDBPersonCreditAsCast[],
-  watchList: WatchListItem[],
+  seenList: SeenItem[],
   genreData: CachedGenreData[],
   taggedImages?: { media_id: number; file_path: string }[]
 ): PredictionResult {
-  const watchSet = new Set(watchList.map((w) => `${w.mediaType}-${w.tmdbId}`));
+  const seenSet = new Set(seenList.map((w) => `${w.mediaType}-${w.tmdbId}`));
 
-  // Build genre frequency from watch list
+  // Build genre frequency from seen list
   const genreFreq = new Map<number, number>();
-  const watchedYears: number[] = [];
+  const seenYears: number[] = [];
 
   for (const item of genreData) {
     for (const g of item.genres) {
@@ -51,13 +51,13 @@ export function predictKnownFrom(
     }
     if (item.year) {
       const y = parseInt(item.year, 10);
-      if (!isNaN(y)) watchedYears.push(y);
+      if (!isNaN(y)) seenYears.push(y);
     }
   }
 
   const totalGenreEntries = [...genreFreq.values()].reduce((a, b) => a + b, 0) || 1;
-  const medianYear = watchedYears.length > 0
-    ? watchedYears.sort((a, b) => a - b)[Math.floor(watchedYears.length / 2)]
+  const medianYear = seenYears.length > 0
+    ? seenYears.sort((a, b) => a - b)[Math.floor(seenYears.length / 2)]
     : 2020;
 
   // Build tagged image map
@@ -99,7 +99,7 @@ export function predictKnownFrom(
       taggedImagePath: taggedMap.get(credit.id) ?? null,
     };
 
-    if (watchSet.has(key)) {
+    if (seenSet.has(key)) {
       entry.score = 1;
       confirmed.push(entry);
       continue;
@@ -137,6 +137,6 @@ export function predictKnownFrom(
     confirmed,
     likely,
     possible,
-    watchListSize: watchList.length,
+    seenCount: seenList.length,
   };
 }

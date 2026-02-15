@@ -7,7 +7,7 @@ import { RatingBadge } from "@/components/RatingBadge";
 import { IMDbRating } from "@/components/IMDbRating";
 import { CastSection } from "@/components/CastSection";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
-import { WatchListButton } from "@/components/WatchListButton";
+import { SeenItButton } from "@/components/SeenItButton";
 
 export default async function MoviePage({
   params,
@@ -105,7 +105,7 @@ export default async function MoviePage({
             )}
 
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <WatchListButton
+              <SeenItButton
                 tmdbId={movie.id}
                 mediaType="movie"
                 title={movie.title}
