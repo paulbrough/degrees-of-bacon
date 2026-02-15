@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ProductionCard } from "@/components/ProductionCard";
 import { PersonCard } from "@/components/PersonCard";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { RatingBadge } from "@/components/RatingBadge";
+import { addRecentClick } from "@/lib/recent-clicks";
 import type {
   TMDBMultiSearchResult,
   TMDBMovieSearchResult,
@@ -179,4 +180,68 @@ export function SearchResults({ results }: SearchResultsProps) {
       )}
     </div>
   );
+}
+
+interface SearchClickTrackerProps {
+  results: TMDBMultiSearchResult[];
+  children: React.ReactNode;
+}
+
+export function SearchClickTracker({ results, children }: SearchClickTrackerProps) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      const match = href.match(/^\/(movie|tv|person)\/(\d+)/);
+      if (!match) return;
+
+      const mediaType = match[1] as "movie" | "tv" | "person";
+      const id = Number(match[2]);
+
+      const result = results.find(
+        (r) => r.id === id && r.media_type === mediaType,
+      );
+      if (!result) return;
+
+      const isMovie = result.media_type === "movie";
+      const isPerson = result.media_type === "person";
+
+      addRecentClick({
+        id: result.id,
+        media_type: result.media_type,
+        title: isMovie ? (result as TMDBMovieSearchResult).title : undefined,
+        name: !isMovie
+          ? isPerson
+            ? (result as TMDBPersonSearchResult).name
+            : (result as TMDBTvSearchResult).name
+          : undefined,
+        poster_path: !isPerson
+          ? isMovie
+            ? (result as TMDBMovieSearchResult).poster_path
+            : (result as TMDBTvSearchResult).poster_path
+          : undefined,
+        profile_path: isPerson
+          ? (result as TMDBPersonSearchResult).profile_path
+          : undefined,
+        release_date: isMovie
+          ? (result as TMDBMovieSearchResult).release_date
+          : undefined,
+        first_air_date: !isMovie && !isPerson
+          ? (result as TMDBTvSearchResult).first_air_date
+          : undefined,
+        vote_average: !isPerson
+          ? (result as TMDBMovieSearchResult | TMDBTvSearchResult).vote_average
+          : undefined,
+        known_for_department: isPerson
+          ? (result as TMDBPersonSearchResult).known_for_department
+          : undefined,
+      });
+    },
+    [results],
+  );
+
+  return <div onClick={handleClick}>{children}</div>;
 }

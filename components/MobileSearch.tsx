@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
+import {
+  getRecentClicks,
+  addRecentClick,
+  type RecentClick,
+} from "@/lib/recent-clicks";
 
 interface SearchResult {
   id: number;
@@ -27,6 +32,7 @@ interface MobileSearchProps {
 export function MobileSearch({ open, onClose }: MobileSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [recentClicks, setRecentClicks] = useState<RecentClick[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,6 +40,7 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
 
   useEffect(() => {
     if (open) {
+      setRecentClicks(getRecentClicks());
       // Small delay to let the overlay animate in before focusing
       const t = setTimeout(() => inputRef.current?.focus(), 100);
       return () => clearTimeout(t);
@@ -71,7 +78,11 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
   const handleChange = (value: string) => {
     setQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchResults(value), 300);
+    if (value.length < 2) {
+      setResults([]);
+    } else {
+      debounceRef.current = setTimeout(() => fetchResults(value), 300);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,7 +93,9 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
     }
   };
 
-  const handleNavigate = () => {
+  const handleNavigate = (r: SearchResult) => {
+    const updated = addRecentClick(r);
+    setRecentClicks(updated);
     onClose();
   };
 
@@ -110,6 +123,9 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
 
   if (!open) return null;
 
+  const showRecents = query.length < 2 && recentClicks.length > 0;
+  const items = showRecents ? recentClicks : results;
+
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-background">
       {/* Header */}
@@ -134,22 +150,27 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
+        {showRecents && (
+          <div className="px-4 pt-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted">
+            Recent
+          </div>
+        )}
         {loading && (
           <div className="px-4 py-4 text-sm text-muted">Searching...</div>
         )}
-        {!loading && results.length === 0 && query.length >= 2 && (
+        {!loading && !showRecents && results.length === 0 && query.length >= 2 && (
           <div className="px-4 py-4 text-sm text-muted">No results found</div>
         )}
-        {!loading && query.length < 2 && (
+        {!loading && query.length < 2 && recentClicks.length === 0 && (
           <div className="px-4 py-4 text-sm text-muted">Type at least 2 characters to search</div>
         )}
-        {results.map((r) => {
+        {items.map((r) => {
           const imgUrl = getImageUrl(r);
           return (
             <Link
               key={`${r.media_type}-${r.id}`}
               href={getHref(r)}
-              onClick={handleNavigate}
+              onClick={() => handleNavigate(r)}
               className="flex items-center gap-4 border-b border-border/50 px-4 py-3 transition-colors active:bg-surface-hover"
             >
               <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded bg-border">

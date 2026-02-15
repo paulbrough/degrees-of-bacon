@@ -3,7 +3,7 @@ import Image from "next/image";
 import { searchMulti } from "@/lib/tmdb";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
 import { RatingBadge } from "@/components/RatingBadge";
-import { SearchResults } from "@/components/SearchResults";
+import { SearchResults, SearchClickTracker } from "@/components/SearchResults";
 import type {
   TMDBMultiSearchResult,
   TMDBMovieSearchResult,
@@ -185,20 +185,22 @@ export default async function SearchPage({
         Results for &ldquo;{q}&rdquo;
       </h1>
 
-      {topResult && (
-        <section className="mt-6">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-            Top Result
-          </h2>
-          <TopResult result={topResult} />
-        </section>
-      )}
+      <SearchClickTracker results={sorted}>
+        {topResult && (
+          <section className="mt-6">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+              Top Result
+            </h2>
+            <TopResult result={topResult} />
+          </section>
+        )}
 
-      {rest.length > 0 && (
-        <section className="mt-8">
-          <SearchResults results={rest} />
-        </section>
-      )}
+        {rest.length > 0 && (
+          <section className="mt-8">
+            <SearchResults results={rest} />
+          </section>
+        )}
+      </SearchClickTracker>
 
       {data.results.length === 0 && (
         <p className="mt-8 text-muted">No results found.</p>

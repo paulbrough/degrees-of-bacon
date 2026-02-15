@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { tmdbImageUrl } from "@/lib/tmdb-image";
+import {
+  getRecentClicks,
+  addRecentClick,
+  type RecentClick,
+} from "@/lib/recent-clicks";
 
 interface SearchResult {
   id: number;
@@ -22,16 +27,20 @@ interface SearchResult {
 export function SearchBar() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [recentClicks, setRecentClicks] = useState<RecentClick[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    setRecentClicks(getRecentClicks());
+  }, []);
+
   const fetchResults = useCallback(async (q: string) => {
     if (q.length < 2) {
       setResults([]);
-      setOpen(false);
       return;
     }
     setLoading(true);
@@ -50,7 +59,21 @@ export function SearchBar() {
   const handleChange = (value: string) => {
     setQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchResults(value), 300);
+    if (value.length < 2) {
+      setResults([]);
+      // Show recents when input is cleared
+      setOpen(recentClicks.length > 0 && value.length === 0);
+    } else {
+      debounceRef.current = setTimeout(() => fetchResults(value), 300);
+    }
+  };
+
+  const handleFocus = () => {
+    if (query.length >= 2 && results.length > 0) {
+      setOpen(true);
+    } else if (query.length < 2 && recentClicks.length > 0) {
+      setOpen(true);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -59,6 +82,12 @@ export function SearchBar() {
       setOpen(false);
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
+  };
+
+  const handleResultClick = (r: SearchResult) => {
+    const updated = addRecentClick(r);
+    setRecentClicks(updated);
+    setOpen(false);
   };
 
   // Close dropdown on click outside
@@ -94,6 +123,9 @@ export function SearchBar() {
     return [type, year].filter(Boolean).join(" · ");
   }
 
+  const showRecents = query.length < 2 && recentClicks.length > 0;
+  const items = showRecents ? recentClicks : results;
+
   return (
     <div ref={wrapperRef} className="relative w-full max-w-xl">
       <form onSubmit={handleSubmit}>
@@ -101,26 +133,31 @@ export function SearchBar() {
           type="text"
           value={query}
           onChange={(e) => handleChange(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
+          onFocus={handleFocus}
           placeholder="Search movies, TV shows, people..."
           className="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted outline-none transition-colors focus:border-accent"
         />
       </form>
       {open && (
         <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-lg border border-border bg-surface shadow-xl">
+          {showRecents && (
+            <div className="px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted">
+              Recent
+            </div>
+          )}
           {loading && (
             <div className="px-4 py-3 text-sm text-muted">Searching...</div>
           )}
-          {!loading && results.length === 0 && query.length >= 2 && (
+          {!loading && !showRecents && results.length === 0 && query.length >= 2 && (
             <div className="px-4 py-3 text-sm text-muted">No results found</div>
           )}
-          {results.map((r) => {
+          {items.map((r) => {
             const imgUrl = getImageUrl(r);
             return (
               <Link
                 key={`${r.media_type}-${r.id}`}
                 href={getHref(r)}
-                onClick={() => setOpen(false)}
+                onClick={() => handleResultClick(r)}
                 className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover"
               >
                 <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded bg-border">
