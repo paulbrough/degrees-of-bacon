@@ -6,6 +6,7 @@ import { Filmography } from "@/components/Filmography";
 import { PredictionResults } from "@/components/PredictionResults";
 import { ExpandableBio } from "@/components/ExpandableBio";
 import { PersonPhotoGallery } from "@/components/PersonPhotoGallery";
+import { KnownFor } from "@/components/KnownFor";
 
 function calculateAge(birthday: string, deathday: string | null): number {
   const birth = new Date(birthday);
@@ -94,6 +95,13 @@ export default async function PersonPage({
           {person.biography && <ExpandableBio text={person.biography} />}
         </div>
       </div>
+
+      {/* Known For */}
+      <KnownFor
+        castCredits={person.combined_credits?.cast ?? []}
+        crewCredits={person.combined_credits?.crew ?? []}
+        knownForDepartment={person.known_for_department}
+      />
 
       {/* Where Do I Know Them From? */}
       <PredictionResults personId={tmdbId} />
