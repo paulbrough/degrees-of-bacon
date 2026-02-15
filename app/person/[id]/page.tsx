@@ -43,7 +43,9 @@ export default async function PersonPage({
   }
 
   const profileUrl = tmdbImageUrl(person.profile_path, "w500");
-  const age = person.birthday ? calculateAge(person.birthday, person.deathday) : null;
+  const age = person.birthday
+    ? calculateAge(person.birthday, person.deathday)
+    : null;
 
   const taggedImages = person.tagged_images?.results ?? [];
   const profileImages = person.images?.profiles ?? [];
@@ -53,7 +55,7 @@ export default async function PersonPage({
       {/* Profile Header */}
       <div className="mb-8 flex flex-col gap-6 sm:flex-row">
         {profileUrl && (
-          <div className="relative aspect-[2/3] w-[200px] shrink-0 overflow-hidden rounded-lg shadow-lg">
+          <div className="relative aspect-[2/3] w-full sm:w-[200px] shrink-0 overflow-hidden rounded-lg shadow-lg">
             <Image
               src={profileUrl}
               alt={person.name}
@@ -88,9 +90,7 @@ export default async function PersonPage({
             {person.place_of_birth && <span>{person.place_of_birth}</span>}
           </div>
 
-          {person.biography && (
-            <ExpandableBio text={person.biography} />
-          )}
+          {person.biography && <ExpandableBio text={person.biography} />}
         </div>
       </div>
 

@@ -35,12 +35,14 @@ export default async function TvPage({
   const imdbId = show.external_ids?.imdb_id ?? null;
 
   const creators = show.created_by ?? [];
-  const writers = show.credits?.crew?.filter(
-    (c) => c.department === "Writing"
-  )?.slice(0, 5) ?? [];
-  const producers = show.credits?.crew?.filter(
-    (c) => c.job === "Executive Producer"
-  )?.slice(0, 5) ?? [];
+  const writers =
+    show.credits?.crew
+      ?.filter((c) => c.department === "Writing")
+      ?.slice(0, 5) ?? [];
+  const producers =
+    show.credits?.crew
+      ?.filter((c) => c.job === "Executive Producer")
+      ?.slice(0, 5) ?? [];
 
   // Build top cast from aggregate_credits (sorted by episode count) or fall back to regular credits
   let tvTopCast: TMDBCastMember[];
@@ -49,7 +51,8 @@ export default async function TvPage({
   const aggCast = show.aggregate_credits?.cast;
   if (aggCast && aggCast.length > 0) {
     const sorted = [...aggCast].sort(
-      (a, b) => b.total_episode_count - a.total_episode_count || a.order - b.order
+      (a, b) =>
+        b.total_episode_count - a.total_episode_count || a.order - b.order,
     );
     tvTopCast = sorted.map((m) => ({
       id: m.id,
@@ -60,16 +63,20 @@ export default async function TvPage({
       known_for_department: "Acting",
     }));
     tvEpisodeCounts = Object.fromEntries(
-      sorted.map((m) => [m.id, m.total_episode_count])
+      sorted.map((m) => [m.id, m.total_episode_count]),
     );
   } else {
     tvTopCast = show.credits?.cast ?? [];
   }
 
   const seasonEpStr = [
-    show.number_of_seasons ? `${show.number_of_seasons} season${show.number_of_seasons > 1 ? "s" : ""}` : null,
+    show.number_of_seasons
+      ? `${show.number_of_seasons} season${show.number_of_seasons > 1 ? "s" : ""}`
+      : null,
     show.number_of_episodes ? `${show.number_of_episodes} episodes` : null,
-  ].filter(Boolean).join(" · ");
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div>
@@ -143,7 +150,7 @@ export default async function TvPage({
               </p>
             )}
 
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="mt-2 flex flex-row gap-2 sm:flex-row sm:flex-wrap">
               <SeenItButton
                 tmdbId={show.id}
                 mediaType="tv"
@@ -170,10 +177,16 @@ export default async function TvPage({
           <div className="flex flex-wrap gap-6 text-sm">
             {creators.length > 0 && (
               <div>
-                <span className="text-muted">Creator{creators.length > 1 ? "s" : ""}</span>
+                <span className="text-muted">
+                  Creator{creators.length > 1 ? "s" : ""}
+                </span>
                 <div className="mt-1 flex gap-2">
                   {creators.map((c) => (
-                    <Link key={c.id} href={`/person/${c.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={c.id}
+                      href={`/person/${c.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {c.name}
                     </Link>
                   ))}
@@ -185,7 +198,11 @@ export default async function TvPage({
                 <span className="text-muted">Writers</span>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {writers.map((w) => (
-                    <Link key={`${w.id}-${w.job}`} href={`/person/${w.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={`${w.id}-${w.job}`}
+                      href={`/person/${w.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {w.name}
                     </Link>
                   ))}
@@ -197,7 +214,11 @@ export default async function TvPage({
                 <span className="text-muted">Executive Producers</span>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {producers.map((p) => (
-                    <Link key={`${p.id}-${p.job}`} href={`/person/${p.id}`} className="hover:text-accent-hover">
+                    <Link
+                      key={`${p.id}-${p.job}`}
+                      href={`/person/${p.id}`}
+                      className="hover:text-accent-hover"
+                    >
                       {p.name}
                     </Link>
                   ))}
