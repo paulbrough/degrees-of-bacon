@@ -8,6 +8,7 @@ import { tmdbImageUrl } from "@/lib/tmdb-image";
 import {
   getRecentClicks,
   addRecentClick,
+  removeRecentClick,
   type RecentClick,
 } from "@/lib/recent-clicks";
 
@@ -99,6 +100,13 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
     onClose();
   };
 
+  const handleRemoveRecent = (e: React.MouseEvent, id: number, mediaType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const updated = removeRecentClick(id, mediaType);
+    setRecentClicks(updated);
+  };
+
   function getHref(r: SearchResult) {
     if (r.media_type === "person") return `/person/${r.id}`;
     return `/${r.media_type}/${r.id}`;
@@ -167,33 +175,43 @@ export function MobileSearch({ open, onClose }: MobileSearchProps) {
         {items.map((r) => {
           const imgUrl = getImageUrl(r);
           return (
-            <Link
-              key={`${r.media_type}-${r.id}`}
-              href={getHref(r)}
-              onClick={() => handleNavigate(r)}
-              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 transition-colors active:bg-surface-hover"
-            >
-              <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded bg-border">
-                {imgUrl ? (
-                  <Image
-                    src={imgUrl}
-                    alt={getLabel(r)}
-                    fill
-                    sizes="44px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-muted">
-                    ?
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{getLabel(r)}</p>
-                <p className="text-xs text-muted">{getSub(r)}</p>
-              </div>
-              <span className="shrink-0 text-xs text-muted">&rsaquo;</span>
-            </Link>
+            <div key={`${r.media_type}-${r.id}`} className="relative">
+              <Link
+                href={getHref(r)}
+                onClick={() => handleNavigate(r)}
+                className="flex items-center gap-4 border-b border-border/50 px-4 py-3 transition-colors active:bg-surface-hover"
+              >
+                <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded bg-border">
+                  {imgUrl ? (
+                    <Image
+                      src={imgUrl}
+                      alt={getLabel(r)}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-muted">
+                      ?
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{getLabel(r)}</p>
+                  <p className="text-xs text-muted">{getSub(r)}</p>
+                </div>
+                {!showRecents && <span className="shrink-0 text-xs text-muted">&rsaquo;</span>}
+              </Link>
+              {showRecents && (
+                <button
+                  onClick={(e) => handleRemoveRecent(e, r.id, r.media_type)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted hover:text-foreground"
+                  aria-label="Remove from recent"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           );
         })}
         {results.length > 0 && query.trim() && (

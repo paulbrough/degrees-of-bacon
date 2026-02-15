@@ -44,3 +44,17 @@ export function addRecentClick(
     return [];
   }
 }
+
+export function removeRecentClick(id: number, mediaType: string): RecentClick[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const existing = getRecentClicks();
+    const filtered = existing.filter(
+      (item) => !(item.id === id && item.media_type === mediaType)
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    return filtered;
+  } catch {
+    return [];
+  }
+}

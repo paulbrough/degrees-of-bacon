@@ -8,6 +8,7 @@ import { tmdbImageUrl } from "@/lib/tmdb-image";
 import {
   getRecentClicks,
   addRecentClick,
+  removeRecentClick,
   type RecentClick,
 } from "@/lib/recent-clicks";
 
@@ -90,6 +91,13 @@ export function SearchBar() {
     setOpen(false);
   };
 
+  const handleRemoveRecent = (e: React.MouseEvent, id: number, mediaType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const updated = removeRecentClick(id, mediaType);
+    setRecentClicks(updated);
+  };
+
   // Close dropdown on click outside
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -154,32 +162,42 @@ export function SearchBar() {
           {items.map((r) => {
             const imgUrl = getImageUrl(r);
             return (
-              <Link
-                key={`${r.media_type}-${r.id}`}
-                href={getHref(r)}
-                onClick={() => handleResultClick(r)}
-                className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover"
-              >
-                <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded bg-border">
-                  {imgUrl ? (
-                    <Image
-                      src={imgUrl}
-                      alt={getLabel(r)}
-                      fill
-                      sizes="32px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-[10px] text-muted">
-                      ?
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{getLabel(r)}</p>
-                  <p className="text-xs text-muted">{getSub(r)}</p>
-                </div>
-              </Link>
+              <div key={`${r.media_type}-${r.id}`} className="group relative">
+                <Link
+                  href={getHref(r)}
+                  onClick={() => handleResultClick(r)}
+                  className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover"
+                >
+                  <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded bg-border">
+                    {imgUrl ? (
+                      <Image
+                        src={imgUrl}
+                        alt={getLabel(r)}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[10px] text-muted">
+                        ?
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{getLabel(r)}</p>
+                    <p className="text-xs text-muted">{getSub(r)}</p>
+                  </div>
+                </Link>
+                {showRecents && (
+                  <button
+                    onClick={(e) => handleRemoveRecent(e, r.id, r.media_type)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Remove from recent"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
