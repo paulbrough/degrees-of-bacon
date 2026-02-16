@@ -55,9 +55,9 @@ export default async function PersonPage({
   return (
     <div>
       {/* Profile Header */}
-      <div className="mb-8 flex flex-col gap-6 sm:flex-row">
+      <div className="mb-8 flex flex-row gap-3 sm:gap-6">
         {profileUrl && (
-          <div className="relative aspect-[2/3] w-full sm:w-[200px] shrink-0 overflow-hidden rounded-lg shadow-lg">
+          <div className="relative aspect-[2/3] w-[100px] sm:w-[200px] shrink-0 self-start overflow-hidden rounded-lg shadow-lg">
             <Image
               src={profileUrl}
               alt={person.name}
@@ -92,7 +92,9 @@ export default async function PersonPage({
             {person.place_of_birth && <span>{person.place_of_birth}</span>}
           </div>
 
-          {person.biography && <ExpandableBio text={person.biography} />}
+          {person.biography && (
+            <ExpandableBio text={person.biography} personName={person.name} />
+          )}
         </div>
       </div>
 

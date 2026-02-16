@@ -163,44 +163,57 @@ export default function SeenItPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="divide-y divide-border">
           {entries.map((entry) => {
             const href = `/${entry.mediaType}/${entry.tmdbId}`;
-            const imgUrl = tmdbImageUrl(entry.posterPath, "w342");
+            const imgUrl = tmdbImageUrl(entry.posterPath, "w185");
             return (
-              <div key={entry.id} className="group relative">
-                <Link href={href} className="block">
-                  <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-surface">
-                    {imgUrl ? (
-                      <Image
-                        src={imgUrl}
-                        alt={entry.title}
-                        fill
-                        sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
-                        className="object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-muted">
-                        No Image
-                      </div>
+              <div key={entry.id} className="group flex gap-4 py-3">
+                {/* Poster Thumbnail */}
+                <Link
+                  href={href}
+                  className="relative h-[90px] w-[60px] shrink-0 overflow-hidden rounded bg-surface sm:h-[120px] sm:w-[80px]"
+                >
+                  {imgUrl ? (
+                    <Image
+                      src={imgUrl}
+                      alt={entry.title}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-muted">
+                      No Image
+                    </div>
+                  )}
+                </Link>
+
+                {/* Content */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={href}
+                      className="text-sm font-medium hover:text-accent-hover"
+                    >
+                      {entry.title}
+                    </Link>
+                    {entry.rating != null && entry.rating > 0 && (
+                      <RatingBadge rating={entry.rating} />
                     )}
                   </div>
-                  <div className="mt-2">
-                    <p className="truncate text-sm font-medium group-hover:text-accent-hover">
-                      {entry.title}
-                    </p>
-                    <div className="mt-1 flex items-center gap-2">
-                      {entry.year && <span className="text-xs text-muted">{entry.year}</span>}
-                      {entry.rating != null && entry.rating > 0 && (
-                        <RatingBadge rating={entry.rating} />
-                      )}
-                    </div>
+                  <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
+                    {entry.year && <span>{entry.year}</span>}
+                    <span className="capitalize">{entry.mediaType}</span>
                   </div>
-                </Link>
+                </div>
+
+                {/* Remove Button */}
                 <button
                   onClick={() => removeEntry(entry.tmdbId, entry.mediaType)}
-                  className="absolute right-1 top-1 rounded-full bg-black/70 p-1.5 text-xs text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                  className="shrink-0 self-start rounded-full bg-black/70 p-1.5 text-sm text-white transition-all hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
                   title="Remove from seen"
+                  aria-label={`Remove ${entry.title} from seen`}
                 >
                   ✕
                 </button>
